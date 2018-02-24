@@ -1,0 +1,253 @@
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass{article}
+
+\usepackage{fancyhdr} % Required for custom headers
+\usepackage{lastpage} % Required to determine the last page for the footer
+\usepackage{extramarks} % Required for headers and footers
+\usepackage[usenames,dvipsnames]{color} % Required for custom colors
+\usepackage{graphicx} % Required to insert images
+\usepackage{subcaption}
+\usepackage{listings} % Required for insertion of code
+\usepackage{courier} % Required for the courier font
+\usepackage{lipsum} % Used for inserting dummy 'Lorem ipsum' text into the template
+\usepackage{amsmath}
+\usepackage{float}
+
+
+% Margins
+\topmargin=-0.45in
+\evensidemargin=0in
+\oddsidemargin=0in
+\textwidth=6.5in
+\textheight=9.0in
+\headsep=0.25in
+
+\linespread{1.1} % Line spacing
+
+% Set up the header and footer
+\pagestyle{fancy}
+\lhead{\hmwkAuthorName} % Top left header
+\chead{\hmwkClass\ : \hmwkTitle} % Top center head
+%\rhead{\firstxmark} % Top right header
+\lfoot{\lastxmark} % Bottom left footer
+\cfoot{} % Bottom center footer
+\rfoot{Page\ \thepage\ of\ \protect\pageref{LastPage}} % Bottom right footer
+\renewcommand\headrulewidth{0.4pt} % Size of the header rule
+\renewcommand\footrulewidth{0.4pt} % Size of the footer rule
+
+\setlength\parindent{0pt} % Removes all indentation from paragraphs
+
+
+%----------------------------------------------------------------------------------------
+%	DOCUMENT STRUCTURE COMMANDS
+%	Skip this unless you know what you're doing
+%----------------------------------------------------------------------------------------
+
+% Header and footer for when a page split occurs within a problem environment
+\newcommand{\enterProblemHeader}[1]{
+	%\nobreak\extramarks{#1}{#1 continued on next page\ldots}\nobreak
+	%\nobreak\extramarks{#1 (continued)}{#1 continued on next page\ldots}\nobreak
+}
+
+% Header and footer for when a page split occurs between problem environments
+\newcommand{\exitProblemHeader}[1]{
+	%\nobreak\extramarks{#1 (continued)}{#1 continued on next page\ldots}\nobreak
+	%\nobreak\extramarks{#1}{}\nobreak
+}
+
+\setcounter{secnumdepth}{0} % Removes default section numbers
+\newcounter{homeworkProblemCounter} % Creates a counter to keep track of the number of problems
+\setcounter{homeworkProblemCounter}{0}
+
+\newcommand{\homeworkProblemName}{}
+\newenvironment{homeworkProblem}[1][Problem \arabic{homeworkProblemCounter}]{ % Makes a new environment called homeworkProblem which takes 1 argument (custom name) but the default is "Problem #"
+	\stepcounter{homeworkProblemCounter} % Increase counter for number of problems
+	\renewcommand{\homeworkProblemName}{#1} % Assign \homeworkProblemName the name of the problem
+	\section{\homeworkProblemName} % Make a section in the document with the custom problem count
+	\enterProblemHeader{\homeworkProblemName} % Header and footer within the environment
+}{
+	\exitProblemHeader{\homeworkProblemName} % Header and footer after the environment
+}
+
+\newcommand{\problemAnswer}[1]{ % Defines the problem answer command with the content as the only argument
+	\noindent\framebox[\columnwidth][c]{\begin{minipage}{0.98\columnwidth}#1\end{minipage}} % Makes the box around the problem answer and puts the content inside
+}
+
+\newcommand{\homeworkSectionName}{}
+\newenvironment{homeworkSection}[1]{ % New environment for sections within homework problems, takes 1 argument - the name of the section
+	\renewcommand{\homeworkSectionName}{#1} % Assign \homeworkSectionName to the name of the section from the environment argument
+	\subsection{\homeworkSectionName} % Make a subsection with the custom name of the subsection
+	\enterProblemHeader{\homeworkProblemName\ [\homeworkSectionName]} % Header and footer within the environment
+}{
+	\enterProblemHeader{\homeworkProblemName} % Header and footer after the environment
+}
+
+
+%========================================================================================================
+%----------------------------------------------------------------------------------------
+%	NAME AND CLASS SECTION
+%----------------------------------------------------------------------------------------
+
+\newcommand{\hmwkTitle}{Assignment\ \#1} % Assignment title
+\newcommand{\hmwkClass}{CSC321} % Course/class
+\newcommand{\hmwkAuthorName}{Xiangyu Kong} % Your name
+\newcommand{\hmwkUTorId}{kongxi16} % UTorID
+
+%----------------------------------------------------------------------------------------
+%	TITLE PAGE
+%----------------------------------------------------------------------------------------
+
+\title{
+	\vspace{2in}
+	\textmd{\textbf{\hmwkClass:\ \hmwkTitle}}\\
+	%	\normalsize\vspace{0.1in}\small{Due\ on\ \hmwkDueDate}\\
+	\vspace{0.1in}
+	\vspace{3in}
+}
+
+\author{\textbf{\hmwkAuthorName} \\ \textbf{\hmwkUTorId}}
+
+% Insert date here if you want it to appear below your name
+\date{\today} 
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+	
+	\maketitle
+	\clearpage
+	
+	%---------------------------------------------------------------------------------
+	%	PROBLEM 1
+	%---------------------------------------------------------------------------------
+	\begin{homeworkProblem}
+%		\noindent \textit{Question}
+		\begin{enumerate}
+			\item 
+			For the word embedding weights, since there are 250 words in total and each word has 16 features, the weight matrix's dimension is  $250 \times 16 = 4000$
+			
+			For the embedding to hidden weights, there are 3 embeddings each with 16 features and the hidden layer consists of 128 units, so the dimension of the weight matrix is $3 \times 16 \times 128 = 6144$ and the dimension for the bias vector is $1 \times 128$
+			
+			For the hidden to output weight, there are 128 hidden units in the hidden layer and the output is the softmax over 250 words, so the dimension is $128 \times 250 = 32000$ and the bias has dimension of $1 \times 250$.
+			
+			Thus the total number of trainable features is $4000 + 6144 + 128 + 32000 + 250 = 42522$  and the layer with the largest number of trainable features is from hidden to output.
+			
+			\item 
+			Since there are 250 total vocabulary, there are $250^3 = 15625000$ permutations of 3-word prefixes. Combining with 250 possible predictions, the total number of entries is $15625000 * 250 = 3906250000$. 
+			
+		\end{enumerate}
+		
+	\end{homeworkProblem}
+	\clearpage
+	
+	
+	%---------------------------------------------------------------------------------
+	%	PROBLEM 2
+	%---------------------------------------------------------------------------------
+	\begin{homeworkProblem}
+		\begin{lstlisting}[caption=Print Gradient Result]
+	loss_derivative[2, 5] 0.0013789153741
+	loss_derivative[2, 121] -0.999459885968
+	loss_derivative[5, 33] 0.000391942483563
+	loss_derivative[5, 31] -0.708749715825
+	
+	param_gradient.word_embedding_weights[27, 2] -0.298510438589
+	param_gradient.word_embedding_weights[43, 3] -1.13004162742
+	param_gradient.word_embedding_weights[22, 4] -0.211118814492
+	param_gradient.word_embedding_weights[2, 5] 0.0
+	
+	param_gradient.embed_to_hid_weights[10, 2] -0.0128399532941
+	param_gradient.embed_to_hid_weights[15, 3] 0.0937808780803
+	param_gradient.embed_to_hid_weights[30, 9] -0.16837240452
+	param_gradient.embed_to_hid_weights[35, 21] 0.0619595914046
+	
+	param_gradient.hid_bias[10] -0.125907091215
+	param_gradient.hid_bias[20] -0.389817847348
+	
+	param_gradient.output_bias[0] -2.23233392034
+	param_gradient.output_bias[1] 0.0333102255428
+	param_gradient.output_bias[2] -0.743090094025
+	param_gradient.output_bias[3] 0.162372657748
+		\end{lstlisting}
+
+		
+		
+	\end{homeworkProblem}
+	\clearpage
+	
+	%---------------------------------------------------------------------------------
+	
+	
+	
+	%---------------------------------------------------------------------------------
+	%	PROBLEM 3
+	%---------------------------------------------------------------------------------
+	\begin{homeworkProblem}
+
+		\begin{enumerate}
+
+			\item 
+			The words "he had some" appeared in the training set for twice, and the predictions are:
+			
+			\begin{lstlisting}
+	The tri-gram ``he had some" was followed by the following words in the training set:
+		life (1 time)
+		years (1 time)
+	
+	he had some time Prob: 0.20988
+	he had some of Prob: 0.16279
+	he had some more Prob: 0.07394
+	he had some money Prob: 0.06740
+	he had some . Prob: 0.06341
+	he had some to Prob: 0.02488
+	he had some children Prob: 0.02266
+	he had some life Prob: 0.02182
+	he had some good Prob: 0.01899
+	he had some people Prob: 0.01821
+			\end{lstlisting}
+			
+			The top predictions make perfect sense, and the result is very interesting because although the words appeared in the training set, the most likely predictions do not include the training set words (life and years).
+			
+			The words I chose were "it was president", and the predictions are: 
+			
+			\begin{lstlisting}
+	The tri-gram ``it was president" did not occur in the training set.
+	it was president . Prob: 0.16863
+	it was president of Prob: 0.16586
+	it was president , Prob: 0.14467
+	it was president for Prob: 0.07258
+	it was president now Prob: 0.04877
+	it was president ? Prob: 0.02850
+	it was president in Prob: 0.02043
+	it was president to Prob: 0.01792
+	it was president and Prob: 0.01520
+	it was president at Prob: 0.01456
+			\end{lstlisting}
+			
+			As shown above, "it was president." and "it was president of" make sense in a normal context.
+			
+			\item 
+			A cluster would be \{ may, might, will, would , could, should, can \}. These are all auxiliary verbs.
+			
+			Another cluster is \{ my, your, his, our, their \}. These are all possessive determiners.
+			
+			A cluster means a set of words have the same structural positions in a sentence.
+			
+			\item 
+			The words ``new" and ``york'' are close together. This is because they are a fixed combination and are used together very often. 
+			
+			\item 
+			``government'' is closer to ``political'' and this is because they are more closely related and they are used together more often.
+
+		\end{enumerate}
+
+	\end{homeworkProblem}
+	\clearpage
+	
+	%----------------------------------------------------------------------------------
+	
+	
+\end{document}
