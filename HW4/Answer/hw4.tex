@@ -1,0 +1,251 @@
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass{article}
+
+\usepackage{fancyhdr} % Required for custom headers
+\usepackage{lastpage} % Required to determine the last page for the footer
+\usepackage{extramarks} % Required for headers and footers
+\usepackage[usenames,dvipsnames]{color} % Required for custom colors
+\usepackage{graphicx} % Required to insert images
+\usepackage{subcaption}
+\usepackage{listings} % Required for insertion of code
+\usepackage{courier} % Required for the courier font
+\usepackage{lipsum} % Used for inserting dummy 'Lorem ipsum' text into the template
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{float}
+
+% Margins
+\topmargin=-0.45in
+\evensidemargin=0in
+\oddsidemargin=0in
+\textwidth=6.5in
+\textheight=9.0in
+\headsep=0.25in
+
+\linespread{1.1} % Line spacing
+
+% Set up the header and footer
+\pagestyle{fancy}
+\lhead{\hmwkAuthorName} % Top left header
+\chead{\hmwkClass\ : \hmwkTitle} % Top center head
+%\rhead{\firstxmark} % Top right header
+\lfoot{\lastxmark} % Bottom left footer
+\cfoot{} % Bottom center footer
+\rfoot{Page\ \thepage\ of\ \protect\pageref{LastPage}} % Bottom right footer
+\renewcommand\headrulewidth{0.4pt} % Size of the header rule
+\renewcommand\footrulewidth{0.4pt} % Size of the footer rule
+
+\setlength\parindent{0pt} % Removes all indentation from paragraphs
+
+
+%----------------------------------------------------------------------------------------
+%	DOCUMENT STRUCTURE COMMANDS
+%	Skip this unless you know what you're doing
+%----------------------------------------------------------------------------------------
+
+% Header and footer for when a page split occurs within a problem environment
+\newcommand{\enterProblemHeader}[1]{
+	%\nobreak\extramarks{#1}{#1 continued on next page\ldots}\nobreak
+	%\nobreak\extramarks{#1 (continued)}{#1 continued on next page\ldots}\nobreak
+}
+
+% Header and footer for when a page split occurs between problem environments
+\newcommand{\exitProblemHeader}[1]{
+	%\nobreak\extramarks{#1 (continued)}{#1 continued on next page\ldots}\nobreak
+	%\nobreak\extramarks{#1}{}\nobreak
+}
+
+\setcounter{secnumdepth}{0} % Removes default section numbers
+\newcounter{homeworkProblemCounter} % Creates a counter to keep track of the number of problems
+\setcounter{homeworkProblemCounter}{0}
+
+\newcommand{\homeworkProblemName}{}
+\newenvironment{homeworkProblem}[1][Problem \arabic{homeworkProblemCounter}]{ % Makes a new environment called homeworkProblem which takes 1 argument (custom name) but the default is "Problem #"
+	\stepcounter{homeworkProblemCounter} % Increase counter for number of problems
+	\renewcommand{\homeworkProblemName}{#1} % Assign \homeworkProblemName the name of the problem
+	\section{\homeworkProblemName} % Make a section in the document with the custom problem count
+	\enterProblemHeader{\homeworkProblemName} % Header and footer within the environment
+}{
+	\exitProblemHeader{\homeworkProblemName} % Header and footer after the environment
+}
+
+\newcommand{\problemAnswer}[1]{ % Defines the problem answer command with the content as the only argument
+	\noindent\framebox[\columnwidth][c]{\begin{minipage}{0.98\columnwidth}#1\end{minipage}} % Makes the box around the problem answer and puts the content inside
+}
+
+\newcommand{\homeworkSectionName}{}
+\newenvironment{homeworkSection}[1]{ % New environment for sections within homework problems, takes 1 argument - the name of the section
+	\renewcommand{\homeworkSectionName}{#1} % Assign \homeworkSectionName to the name of the section from the environment argument
+	\subsection{\homeworkSectionName} % Make a subsection with the custom name of the subsection
+	\enterProblemHeader{\homeworkProblemName\ [\homeworkSectionName]} % Header and footer within the environment
+}{
+	\enterProblemHeader{\homeworkProblemName} % Header and footer after the environment
+}
+
+
+%========================================================================================================
+%----------------------------------------------------------------------------------------
+%	NAME AND CLASS SECTION
+%----------------------------------------------------------------------------------------
+
+\newcommand{\hmwkTitle}{Assignment\ \#4} % Assignment title
+\newcommand{\hmwkClass}{CSC321} % Course/class
+\newcommand{\hmwkAuthorName}{Xiangyu Kong} % Your name
+\newcommand{\hmwkUTorId}{kongxi16} % UTorID
+
+%----------------------------------------------------------------------------------------
+%	TITLE PAGE
+%----------------------------------------------------------------------------------------
+
+\title{
+	\vspace{2in}
+	\textmd{\textbf{\hmwkClass:\ \hmwkTitle}}\\
+	%	\normalsize\vspace{0.1in}\small{Due\ on\ \hmwkDueDate}\\
+	\vspace{0.1in}
+	\vspace{3in}
+}
+
+\author{\textbf{\hmwkAuthorName} \\ \textbf{\hmwkUTorId}}
+
+% Insert date here if you want it to appear below your name
+\date{\today} 
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+	
+	\maketitle
+	\clearpage
+	
+	
+	%---------------------------------------------------------------------------------
+	%	PROBLEM 1
+	%---------------------------------------------------------------------------------
+	
+	\begin{homeworkProblem}
+	
+		\begin{enumerate}
+			
+			\item 
+			\begin{align*}
+			\dfrac{\partial C}{\partial \theta_i} = a_i ( \theta_i - r_i )
+			\end{align*}
+			then
+			\begin{align*}
+			\theta_i^{(t + 1)} &= \theta_i^{(t)} - \alpha \dfrac{\partial C}{\partial \theta_i}\\
+			&= \theta_i^{(t)} - \alpha a_i ( \theta_i^{(t)} - r_i )
+			\end{align*}
+			
+			\item 
+			\begin{align*}
+			e_i^{(t + 1)} &= \theta_i^{(t + 1)} - r_i\\
+			&= \theta_i^{(t)} - \alpha a_i ( \theta_i^{(t)} - r_i ) - r_i\\
+			&= e_i^{(t)} - \alpha a_i ( \theta_i^{(t)} - r_i )\\
+			&= e_i^{(t)} - \alpha a_i  e_i^{(t)} 
+			\end{align*}
+			
+			\item 
+			solving the equation, 
+			\begin{align*}
+			e_i^{(t)} = e_i^{(0)} (1 - \alpha a_i)^{t}
+			\end{align*}
+			For $0 < \alpha < \dfrac{2}{a_i}$, $e_i^{(t)}$ will converge, so $e_i^{(t)}$ will be stable.\\
+			For $\alpha < 0$ or $\alpha > \dfrac{2}{a_i}$, $e_i^{(t)}$ will diverge and become unstable.
+			
+			\item 
+			\begin{align*}
+			\mathcal{C}(\mathbf{\theta}^{(t)}) &= \sum \limits^{N}_{i = 0} \dfrac{a_i}{2} (e_i^{(t)})^2\\
+			&= \sum \limits^{N}_{i = 0} \dfrac{a_i}{2} (e_i^{(0)} (1 - \alpha a_i)^{t})^2
+			\end{align*}
+			As $t \rightarrow \infty$, $a_i$ will dominate
+			
+		\end{enumerate}
+		
+	\end{homeworkProblem}
+	\clearpage
+	
+	
+	
+	%---------------------------------------------------------------------------------
+	%	PROBLEM 2
+	%---------------------------------------------------------------------------------
+	
+	\begin{homeworkProblem}
+		\begin{enumerate}
+			\item 
+			\begin{align*}
+			\mathbb{E}[y] &= \mathbb{E}[\sum \limits_{j} m_j w_j x_j]\\
+			&= \sum \limits_{j} \mathbb{E}[m_j w_j x_j]\\
+			&= \sum \limits_{j}  w_j x_j \mathbb{E}[m_j]\\
+			&= \sum \limits_{j}  \dfrac{1}{2} w_j x_j \\
+			&= \dfrac{1}{2} \mathbf{w}^{\top} \mathbf{x}
+			\end{align*}
+			
+			\begin{align*}
+			Var[y] &= Var[\sum \limits_{j} m_j w_j x_j]\\
+			&= \sum \limits_{j} Var[ m_j w_j x_j ] + \sum \limits_{i \neq j}Cov[w_i, w_j]\\
+			&= \sum \limits_{j} (w_j x_j)^2 Var[ m_j ] \\
+			&= \sum \limits_{j} \dfrac{1}{4} (w_j x_j)^2\\
+			&= \sum \limits_{j} ( \dfrac{1}{2} w_j x_j)^2\\
+			&= \dfrac{1}{4} (\mathbf{w}^{\top} \mathbf{x})^2
+			\end{align*}
+			
+			\item 
+			\begin{align*}
+			\mathbb{E}[y] &= \sum \limits_{j}  \dfrac{1}{2} w_j x_j \\
+			&= \sum \limits_{j} \tilde{w_j} x_j
+			\end{align*}
+			then 
+			
+			\begin{align*}
+			\tilde{w_j} = \dfrac{1}{2} w_j
+			\end{align*}
+			
+			\newpage
+			\item
+			\begin{align*}
+			\mathcal{E} &= \dfrac{1}{2N} \sum\limits_{i = 1}^{N} \mathbb{E}[ (y^{(i)} - t_{(i)})^2 ]\\
+			&= \dfrac{1}{2N} \sum\limits_{i = 1}^{N} \mathbb{E}[ {y^{(i)}}^2 - 2 y^{(i)} t^{(i)} + {t^{(i)}}^2 ]\\
+			&= \dfrac{1}{2N} \sum\limits_{i = 1}^{N} [ \mathbb{E}[ {y^{(i)}}^2 ] - \mathbb{E} [2 y^{(i)} t^{(i)}] + \mathbb{E} [{t^{(i)}}^2 ] ]\\
+			&= \dfrac{1}{2N} \sum\limits_{i = 1}^{N} [
+			 	\mathbb{E}[y^{(i)}] ^2 + Var[y^{(i)}] - 2 \mathbb{E} [ y^{(i)} ] \mathbb{E} [ t^{(i)} ] + \mathbb{E}[t^{(i)}] ^2 + Var[t^{(i)}] 
+			 ]\\
+			 &= \dfrac{1}{2N} \sum\limits_{i = 1}^{N} [
+			 	(\sum \limits_{j}  \dfrac{1}{2} w_j x_j^{(i)}) ^2 + 
+			 	( \sum \limits_{j} (\dfrac{1}{2} w_j x_j^{(i)})^2) - 
+			 	t^{(i)} (\sum \limits_{j} w_j x_j^{(i)}) + 
+			 	{t^{(i)}}^2 
+			 ]
+			\end{align*}
+			substituting $\tilde{w}_j = \dfrac{1}{2} w_j$,
+			\begin{align*}
+			\mathcal{E}  &= \dfrac{1}{2N} \sum\limits_{i = 1}^{N} [
+				(\sum \limits_{j}  \tilde{w}_j x_j^{(i)}) ^2 + 
+				( \sum \limits_{j} (\tilde{w}_j x_j^{(i)})^2) - 
+				2 t^{(i)} (\sum \limits_{j} \tilde{w}_j x_j^{(i)}) + 
+				{t^{(i)}}^2
+			]
+			\end{align*}
+			substituting $\tilde{y} = \sum \limits_{j} \tilde{w}_j x_j$,
+			\begin{align*}
+			\mathcal{E}  &= \dfrac{1}{2N} \sum\limits_{i = 1}^{N} [
+				\tilde{y}^{(i)2} + 
+				( \sum \limits_{j} (\tilde{w}_j x_j^{(i)})^2) - 
+				2 t^{(i)} \tilde{y}^{(i)} + 
+				{t^{(i)}}^2
+			]\\
+			&= \dfrac{1}{2N} \sum\limits_{i = 1}^{N} (\tilde{y}^{(i)} - t^{(i)})^2 + \dfrac{1}{2N} \sum\limits_{i = 1}^{N} ( \sum \limits_{j} (\tilde{w}_j x_j^{(i)})^2)
+			\end{align*}
+			Then $\mathcal{R} = \sum\limits_{i = 1}^{N} ( \sum \limits_{j} (\tilde{w}_j x_j^{(i)})^2)$
+			
+		\end{enumerate}
+		
+	\end{homeworkProblem}
+	\clearpage
+	
+	%----------------------------------------------------------------------------------------
+	
+\end{document}
