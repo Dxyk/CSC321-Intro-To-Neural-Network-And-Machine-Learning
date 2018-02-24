@@ -1,0 +1,101 @@
+\documentclass{article}
+\usepackage{fullpage}
+\usepackage[normalem]{ulem}
+\usepackage{amstext}
+\usepackage{amsmath}
+%\usepackage{unicode-math}
+%\setmathfont{latinmodern-math.otf}
+\newcommand{\var}[1]{\mathit{#1}}
+\setlength{\parskip}{6pt}
+
+\begin{document}
+
+\noindent
+University of Toronto\\
+{\sc CSC}321, Winter 2018\\[10pt]
+{\LARGE\bf HW 1: Xiangyu Kong 1002109620 kongxi16} \\[10pt]
+
+%----------------------------------------------------------------------------------------------------------------------
+\section*{1}
+
+\begin{enumerate}
+
+
+\item   % 1.
+Given:
+\begin{align*}
+	\mathcal{E}_{\text{Reg}} &= \dfrac{1}{2N} \sum \limits_{i = 1}^{N} ( y^{(i)} - t^{(i)} )^2 + 
+													\dfrac{\lambda}{2} \sum \limits_{j = 1}^{D} w_{j}^{2} \\
+	&= \dfrac{1}{2N} \sum \limits_{i = 1}^{N} (y^{(i)} - t^{(i)})^{2}  + 
+	\dfrac{\lambda}{2} \sum \limits_{j = 1}^{D} w_{j}^{2} \\
+	&= \dfrac{1}{2N} \sum \limits_{i = 1}^{N} ((\sum \limits_{j' = 1}^{D} w_{j'} x_{j'}^{(i)} + b) - t^{(i)})^{2} + 
+	\dfrac{\lambda}{2} \sum \limits_{j = 1}^{D} w_{j}^{2} 
+\end{align*}
+We can calculate that:
+\begin{align*}
+	\dfrac{\partial \mathcal{E}_{\text{Reg}}}{\partial w_{j}} &= \dfrac{1}{N} \sum \limits_{i = 1}^{N} x_{j}^{(i)} ( (\sum \limits_{j' = 1}^{D} w_{j'} x_{j'}^{(i)} + b) - t^{(i)}) + \lambda w_{j} \\
+	&= \dfrac{1}{N} \sum \limits_{i = 1}^{N} x_{j}^{(i)} ( y^{(i)} - t^{(i)}) + \lambda w_{j}
+\end{align*}
+Then the gradient descent update rule for $w_{j}$ is: 
+\begin{align*}
+	w_{j} \leftarrow w_{j} - (\dfrac{\alpha}{N} \sum \limits_{i = 1}^{N} x_{j}^{(i)} ( y^{(i)} - t^{(i)}) + \lambda w_{j})
+\end{align*}
+For $b$, since there is no new term in $\mathcal{R}(\mathbf{w})$ that involves $b$, the update rule for $b$ remains the same as before:
+\begin{align*}
+	b \leftarrow b - \alpha \dfrac{1}{N} \sum \limits_{i = 1}^{N} ( y^{(i)} - t^{(i)})
+\end{align*}
+This form of regularization is called "weight decay" because weight $w_{j}$ will decay in proportion to its current size. I.e. the larger the weight is, the larger the decay will be.
+
+
+\item % 1.2
+According to above, 
+\begin{align*}
+	\dfrac{\partial \mathcal{E}_{\text{Reg}}}{\partial w_{j}} &= \dfrac{1}{N} \sum \limits_{i = 1}^{N}
+x_{j}^{(i)} ( y^{(i)} - t^{(i)}) + \lambda w_{j'} \\
+	&= \dfrac{1}{N} \sum \limits_{i = 1}^{N} (x_{j}^{(i)} (\sum \limits_{j' = 1}^{D} w_{j'} x_{j'}^{(i)}) - t^{(i)}) + 
+\lambda w_{j'} \\
+	&= \dfrac{1}{N} \sum \limits_{i = 1}^{N} x_{j}^{(i)} (\sum \limits_{j' = 1}^{D} w_{j'} x_{j'}^{(i)}) - \dfrac{1}{N} \sum \limits_{i = 1}^{N} x_{j}^{(i)} t^{(i)} + \lambda w_{j'} \\
+	&= \sum \limits_{j' = 1}^{D} (\dfrac{1}{N} \sum \limits_{i = 1}^{N} x_{j}^{(i)}  x_{j'}^{(i)}) w_{j'}  + \lambda w_{j'} - (\dfrac{1}{N} \sum \limits_{i = 1}^{N} x_{j}^{(i)} t^{(i)}) \\
+	&= \sum \limits_{j' = 1}^{D} (\dfrac{1}{N} \sum \limits_{i = 1}^{N} x_{j}^{(i)}  x_{j'}^{(i)} + \lambda I) w_{j'} - (\dfrac{1}{N} \sum \limits_{i = 1}^{N} x_{j}^{(i)} t^{(i)})
+\end{align*}
+Then $A_{jj'} = \dfrac{1}{N} \sum \limits_{i = 1}^{N} x_{j}^{(i)}  x_{j'}^{(i)} + \lambda I$ and $c_j = \dfrac{1}{N} \sum \limits_{i = 1}^{N} x_{j}^{(i)} t^{(i)}$ where $I$ is the identity matrix
+
+\end{enumerate}
+
+
+\section*{2}
+
+
+\begin{enumerate}
+
+
+\item % 2.1
+According to the formula for $\mathcal{E}$, 
+\begin{align*}
+	\mathcal{E} &= \dfrac{1}{2N} \sum \limits_{i = 1}^{N} ( y^{(i)} - t^{(i)} )^2
+\end{align*}
+In this case, plug in the data $(x^{(1)}, t^{(1)})$, $(x^{(2)}, t^{(2)})$ and $(x^{(3)}, t^{(3)})$
+\begin{align*}
+	\mathcal{E} &= \dfrac{1}{2N} [ (y^{(1)} - t^{(1)})^2 + (y^{(2)} - t^{(2)})^2 + (y^{(3)} - t^{(3)})^2] \\
+	&= \dfrac{1}{2 \times 3} [ (2w_1 - 1)^2 + (w_2 - 2)^2 + (w_2 - 0)^2] \\
+	&= \dfrac{2}{3} (w_1 - \dfrac{1}{2})^2 + \dfrac{1}{3} (w_2 - 1)^2 + \dfrac{1}{3}
+\end{align*}
+
+
+\item % 2.2
+According to above, 
+\begin{align*}
+	\mathcal{E} = \dfrac{2}{3} (w_1 - \dfrac{1}{2})^2 + \dfrac{1}{3} (w_2 - 1)^2 + \dfrac{1}{3}
+\end{align*}
+Setting $\mathcal{E} = 1$,
+\begin{align*}
+	\dfrac{2}{3} (w_1 - \dfrac{1}{2})^2 + \dfrac{1}{3} (w_2 - 1)^2 + \dfrac{1}{3} &= 1 \\
+	\dfrac{(w_1 - \dfrac{1}{2})^2}{1^2} + \dfrac{(w_2 - 1)^2}{\sqrt{2}^2} &= 1
+\end{align*}
+See next page for the graph:
+
+
+\end{enumerate}
+
+
+\end{document}
