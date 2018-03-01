@@ -3,7 +3,7 @@ import numpy as np
 import numpy.random as npr
 import os
 import scipy.misc
-import torch 
+import torch
 import torch.nn as nn
 
 from colourization import (get_torch_vars, get_cat_rgb, get_rgb_cat,
@@ -53,34 +53,35 @@ if __name__ == '__main__':
 
     # Take the idnex of the test image
     id = args.index
-    outdir = args.outdir + str(id)
-    os.mkdir(outdir)
-    images, labels = get_torch_vars(np.expand_dims(test_grey[id], 0),
-                                    np.expand_dims(test_rgb_cat[id], 0))
-    outputs = cnn(images)
-    _, predicted = torch.max(outputs.data, 1, keepdim=True)
-    predcolor = get_cat_rgb(predicted.cpu().numpy()[0,0,:,:], colours)
-    scipy.misc.toimage(predcolor, cmin=0, cmax=1) \
-            .save(os.path.join(outdir, "filter_output_%d.png" % id))
+    for id in [1, 2, 3, 4, 5, 10]:
+        outdir = args.outdir + str(id)
+        os.mkdir(outdir)
+        images, labels = get_torch_vars(np.expand_dims(test_grey[id], 0),
+                                        np.expand_dims(test_rgb_cat[id], 0))
+        outputs = cnn(images)
+        _, predicted = torch.max(outputs.data, 1, keepdim=True)
+        predcolor = get_cat_rgb(predicted.cpu().numpy()[0,0,:,:], colours)
+        scipy.misc.toimage(predcolor, cmin=0, cmax=1) \
+                .save(os.path.join(outdir, "filter_output_%d.png" % id))
 
 
-    scipy.misc.toimage(np.transpose(test_rgb[id], [1,2,0]), cmin=0, cmax=1) \
-            .save(os.path.join(outdir, "filter_input_rgb_%d.png" % id))
-    scipy.misc.toimage(test_grey[id,0,:,:], cmin=0, cmax=1) \
-            .save(os.path.join(outdir, "filter_input_%d.png" % id))
+        scipy.misc.toimage(np.transpose(test_rgb[id], [1,2,0]), cmin=0, cmax=1) \
+                .save(os.path.join(outdir, "filter_input_rgb_%d.png" % id))
+        scipy.misc.toimage(test_grey[id,0,:,:], cmin=0, cmax=1) \
+                .save(os.path.join(outdir, "filter_input_%d.png" % id))
 
-    def add_border(img):
-        return np.pad(img, 1, "constant", constant_values=1.0)
+        def add_border(img):
+            return np.pad(img, 1, "constant", constant_values=1.0)
 
-    def draw_activations(path, activation, imgwidth=4):
-        img = np.vstack([
-            np.hstack([
-                add_border(filter) for filter in
-                activation[i*imgwidth:(i+1)*imgwidth,:,:]])
-            for i in range(activation.shape[0] // imgwidth)])
-        scipy.misc.imsave(path, img)
+        def draw_activations(path, activation, imgwidth=4):
+            img = np.vstack([
+                np.hstack([
+                    add_border(filter) for filter in
+                    activation[i*imgwidth:(i+1)*imgwidth,:,:]])
+                for i in range(activation.shape[0] // imgwidth)])
+            scipy.misc.imsave(path, img)
 
-    for i, tensor in enumerate([cnn.out1, cnn.out2, cnn.out3, cnn.out4, cnn.out5]):
-        draw_activations(
-            os.path.join(outdir, "filter_out%d_%d.png" % (i, id)),
-            tensor.data.cpu().numpy()[0])
+        for i, tensor in enumerate([cnn.out1, cnn.out2, cnn.out3, cnn.out4, cnn.out5]):
+            draw_activations(
+                os.path.join(outdir, "filter_out%d_%d.png" % (i, id)),
+                tensor.data.cpu().numpy()[0])

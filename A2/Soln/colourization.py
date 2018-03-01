@@ -10,18 +10,18 @@ import numpy as np
 import numpy.random as npr
 import scipy.misc
 import time
-import torch 
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 import matplotlib
-matplotlib.use('Agg') # switch backend
-import matplotlib.pyplot as plt 
-
-
 from load_data import load_cifar10
+import matplotlib.pyplot as plt
+
+matplotlib.use('Agg')  # switch backend
 
 HORSE_CATEGORY = 7
+
 
 ######################################################################
 # Data related code
@@ -44,10 +44,11 @@ def get_rgb_cat(xs, colours):
     batch_size = 100
     nexts = []
     for i in range(0, np.shape(xs)[0], batch_size):
-        next = _get_rgb_cat(xs[i:i+batch_size,:,:,:], colours)
+        next = _get_rgb_cat(xs[i:i + batch_size, :, :, :], colours)
         nexts.append(next)
-    result = np.concatenate(nexts, axis=0)
+    result = np.concatenate(nexts, axis = 0)
     return result
+
 
 def _get_rgb_cat(xs, colours):
     """
@@ -64,11 +65,12 @@ def _get_rgb_cat(xs, colours):
     """
     num_colours = np.shape(colours)[0]
     xs = np.expand_dims(xs, 0)
-    cs = np.reshape(colours, [num_colours,1,3,1,1])
-    dists = np.linalg.norm(xs-cs, axis=2) # 2 = colour axis
-    cat = np.argmin(dists, axis=0)
-    cat = np.expand_dims(cat, axis=1)
+    cs = np.reshape(colours, [num_colours, 1, 3, 1, 1])
+    dists = np.linalg.norm(xs - cs, axis = 2)  # 2 = colour axis
+    cat = np.argmin(dists, axis = 0)
+    cat = np.expand_dims(cat, axis = 1)
     return cat
+
 
 def get_cat_rgb(cats, colours):
     """
@@ -82,7 +84,8 @@ def get_cat_rgb(cats, colours):
     """
     return colours[cats]
 
-def process(xs, ys, max_pixel=256.0):
+
+def process(xs, ys, max_pixel = 256.0):
     """
     Pre-process CIFAR10 images by taking only the horse category,
     shuffling, and have colour values be bound between 0 and 1
@@ -98,8 +101,9 @@ def process(xs, ys, max_pixel=256.0):
     xs = xs / max_pixel
     xs = xs[np.where(ys == HORSE_CATEGORY)[0], :, :, :]
     npr.shuffle(xs)
-    grey = np.mean(xs, axis=1, keepdims=True)
+    grey = np.mean(xs, axis = 1, keepdims = True)
     return (xs, grey)
+
 
 def get_batch(x, y, batch_size):
     '''
@@ -116,9 +120,10 @@ def get_batch(x, y, batch_size):
     N = np.shape(x)[0]
     assert N == np.shape(y)[0]
     for i in range(0, N, batch_size):
-        batch_x = x[i:i+batch_size, :,:,:]
-        batch_y = y[i:i+batch_size, :,:,:]
+        batch_x = x[i:i + batch_size, :, :, :]
+        batch_y = y[i:i + batch_size, :, :, :]
         yield (batch_x, batch_y)
+
 
 def plot(input, gtlabel, output, colours, path):
     """
@@ -131,15 +136,15 @@ def plot(input, gtlabel, output, colours, path):
       colours: numpy array of colour categories and their RGB values
       path: output path
     """
-    grey = np.transpose(input[:10,:,:,:], [0,2,3,1])
-    gtcolor = get_cat_rgb(gtlabel[:10,0,:,:], colours)
-    predcolor = get_cat_rgb(output[:10,0,:,:], colours)
+    grey = np.transpose(input[:10, :, :, :], [0, 2, 3, 1])
+    gtcolor = get_cat_rgb(gtlabel[:10, 0, :, :], colours)
+    predcolor = get_cat_rgb(output[:10, 0, :, :], colours)
 
     img = np.vstack([
-      np.hstack(np.tile(grey, [1,1,1,3])),
-      np.hstack(gtcolor),
-      np.hstack(predcolor)])
-    scipy.misc.toimage(img, cmin=0, cmax=1).save(path)
+        np.hstack(np.tile(grey, [1, 1, 1, 3])),
+        np.hstack(gtcolor),
+        np.hstack(predcolor)])
+    scipy.misc.toimage(img, cmin = 0, cmax = 1).save(path)
 
 
 ######################################################################
@@ -150,7 +155,8 @@ class MyConv2d(nn.Module):
     """
     Our simplified implemented of nn.Conv2d module for 2D convolution
     """
-    def __init__(self, in_channels, out_channels, kernel_size, padding=None):
+
+    def __init__(self, in_channels, out_channels, kernel_size, padding = None):
         super(MyConv2d, self).__init__()
 
         self.in_channels = in_channels
@@ -172,82 +178,206 @@ class MyConv2d(nn.Module):
         self.bias.data.uniform_(-stdv, stdv)
 
     def forward(self, input):
-        return F.conv2d(input, self.weight, self.bias, padding=self.padding)
+        return F.conv2d(input, self.weight, self.bias, padding = self.padding)
+
 
 class MyDilatedConv2d(MyConv2d):
     """
     Dilated Convolution 2D
     """
-    def __init__(self, in_channels, out_channels, kernel_size, dilation=1):
+
+    def __init__(self, in_channels, out_channels, kernel_size, dilation = 1):
         super(MyDilatedConv2d, self).__init__(in_channels,
                                               out_channels,
                                               kernel_size)
         self.dilation = dilation
 
     def forward(self, input):
-        ############### YOUR CODE GOES HERE ############### 
+        ############### YOUR CODE GOES HERE ###############
         pass
         ###################################################
+
 
 class CNN(nn.Module):
     def __init__(self, kernel, num_filters, num_colours):
         super(CNN, self).__init__()
         padding = kernel // 2
 
-        ############### YOUR CODE GOES HERE ############### 
-        #self.downconv1 = ...
+        ############### YOUR CODE GOES HERE ###############
+        self.downconv1 = nn.Sequential(
+            MyConv2d(1, num_filters, kernel_size = kernel, padding = padding),
+            nn.MaxPool2d(2),
+            nn.BatchNorm2d(num_filters),
+            nn.ReLU())
+
+        self.downconv2 = nn.Sequential(
+            MyConv2d(num_filters, num_filters * 2, kernel_size = kernel,
+                      padding = padding),
+            nn.MaxPool2d(2),
+            nn.BatchNorm2d(num_filters * 2),
+            nn.ReLU())
+
+        self.rfconv = nn.Sequential(
+            MyConv2d(num_filters * 2, num_filters * 2, kernel_size = kernel,
+                      padding = padding),
+            nn.BatchNorm2d(num_filters * 2),
+            nn.ReLU())
+
+        self.upconv1 = nn.Sequential(
+            MyConv2d(num_filters * 2, num_filters, kernel_size = kernel,
+                      padding = padding),
+            nn.Upsample(scale_factor = 2),
+            nn.BatchNorm2d(num_filters),
+            nn.ReLU())
+
+        self.upconv2 = nn.Sequential(
+            MyConv2d(num_filters, num_colours, kernel_size = kernel, padding = padding),
+            nn.Upsample(scale_factor = 2),
+            nn.BatchNorm2d(num_colours),
+            nn.ReLU())
+
+        self.finalconv = MyConv2d(num_colours, num_colours, kernel_size = kernel)
         ###################################################
 
     def forward(self, x):
+        print_res = False
+
         self.out1 = self.downconv1(x)
         self.out2 = self.downconv2(self.out1)
         self.out3 = self.rfconv(self.out2)
         self.out4 = self.upconv1(self.out3)
         self.out5 = self.upconv2(self.out4)
         self.out_final = self.finalconv(self.out5)
+        # For testing
+        if print_res:
+            print("X: {}".format(x.shape))
+            print("out 1: {}".format(self.out1.shape))
+            print("out 2: {}".format(self.out2.shape))
+            print("out 3: {}".format(self.out3.shape))
+            print("out 4: {}".format(self.out4.shape))
+            print("out 5: {}".format(self.out5.shape))
+            print("out final: {}".format(self.out_final.shape))
         return self.out_final
+
 
 class UNet(nn.Module):
     def __init__(self, kernel, num_filters, num_colours):
         super(UNet, self).__init__()
+        padding = kernel // 2
 
-        ############### YOUR CODE GOES HERE ############### 
+        ############### YOUR CODE GOES HERE ###############
+        # x
 
+        self.downconv1 = nn.Sequential(
+            MyConv2d(1, num_filters, kernel_size = kernel, padding = padding),
+            nn.MaxPool2d(2),  # [, , /2, /2]
+            nn.BatchNorm2d(num_filters),
+            nn.ReLU())
+        # out1
+
+        self.downconv2 = nn.Sequential(
+            MyConv2d(num_filters, num_filters * 2, kernel_size = kernel,
+                      padding = padding),
+            nn.MaxPool2d(2),
+            nn.BatchNorm2d(num_filters * 2),
+            nn.ReLU())
+        # out2
+
+        self.rfconv = nn.Sequential(
+            MyConv2d(num_filters * 2, num_filters * 2, kernel_size = kernel,
+                      padding = padding),
+            nn.BatchNorm2d(num_filters * 2),
+            nn.ReLU())
+        # out3
+
+        self.upconv1 = nn.Sequential(
+            MyConv2d(4 * num_filters, num_filters, kernel_size = kernel,
+                      padding = padding),
+            nn.Upsample(scale_factor = 2),
+            nn.BatchNorm2d(num_filters),
+            nn.ReLU())
+        # out4
+
+        self.upconv2 = nn.Sequential(
+            MyConv2d(2 * num_filters, num_colours, kernel_size = kernel, padding = padding),
+            nn.Upsample(scale_factor = 2),
+            nn.BatchNorm2d(num_colours),
+            nn.ReLU())
+        # out5
+
+        self.finalconv = MyConv2d(num_colours + 1, num_colours, kernel_size = kernel)
+        # out_final
         ###################################################
 
     def forward(self, x):
-        ############### YOUR CODE GOES HERE ############### 
-        #self.out1 = ...
-        #self.out2 = ...
-        #self.out3 = ...
-        #self.out4 = ...
-        #self.out5 = ...
-        #self.out_final = ...
-        #return self.out_final
+        ############### YOUR CODE GOES HERE ###############
+        # For testing
+        print_res = False
+        # TODO: could not get cuda running?
+
+        if print_res:
+            print("X: {}".format(x.shape))
+            self.out1 = self.downconv1(x)
+            print("out 1: {}".format(self.out1.shape))
+            self.out2 = self.downconv2(self.out1)
+            print("out 2: {}".format(self.out2.shape))
+            self.out3 = self.rfconv(self.out2)
+            self.out3 = torch.cat((self.out2, self.out3), 1)
+            print("out 3: {}".format(self.out3.shape))
+
+            self.out4 = self.upconv1(self.out3)
+            self.out4 = torch.cat((self.out1, self.out4), 1)
+            print("out 4: {}".format(self.out4.shape))
+
+            self.out5 = self.upconv2(self.out4)
+            self.out5 = torch.cat((x, self.out5), 1)
+            print("out 5: {}".format(self.out5.shape))
+
+            self.out_final = self.finalconv(self.out5)
+            print("out final: {}".format(self.out_final.shape))
+
+        else:
+            self.out1 = self.downconv1(x)
+            self.out2 = self.downconv2(self.out1)
+
+            self.out3 = self.rfconv(self.out2)
+            self.out3 = torch.cat((self.out3, self.out2), 1)
+
+            self.out4 = self.upconv1(self.out3)
+            self.out4 = torch.cat((self.out4, self.out1), 1)
+
+            self.out5 = self.upconv2(self.out4)
+            self.out5 = torch.cat((self.out5, x), 1)
+
+            self.out_final = self.finalconv(self.out5)
+
+        return self.out_final
         ###################################################
-        pass
+
 
 class DilatedUNet(UNet):
     def __init__(self, kernel, num_filters, num_colours):
         super(DilatedUNet, self).__init__(kernel, num_filters, num_colours)
         # replace the intermediate dilations
         self.rfconv = nn.Sequential(
-            MyDilatedConv2d(num_filters*2, num_filters*2, kernel_size=kernel, dilation=1),
-            nn.BatchNorm2d(num_filters*2),
+            MyDilatedConv2d(num_filters * 2, num_filters * 2, kernel_size = kernel,
+                            dilation = 1),
+            nn.BatchNorm2d(num_filters * 2),
             nn.ReLU())
+
 
 ######################################################################
 # Torch Helper
 ######################################################################
 
-def get_torch_vars(xs, ys, gpu=False):
+def get_torch_vars(xs, ys, gpu = False):
     """
     Helper function to convert numpy arrays to pytorch tensors.
     If GPU is used, move the tensors to GPU.
 
     Args:
       xs (float numpy tenosor): greyscale input
-      ys (int numpy tenosor): categorical labels 
+      ys (int numpy tenosor): categorical labels
       gpu (bool): whether to move pytorch tensor to GPU
     Returns:
       Variable(xs), Variable(ys)
@@ -258,6 +388,7 @@ def get_torch_vars(xs, ys, gpu=False):
         xs = xs.cuda()
         ys = ys.cuda()
     return Variable(xs), Variable(ys)
+
 
 def compute_loss(criterion, outputs, labels, batch_size, num_colours):
     """
@@ -275,16 +406,17 @@ def compute_loss(criterion, outputs, labels, batch_size, num_colours):
       pytorch tensor for loss
     """
 
-    loss_out = outputs.transpose(1,3) \
-                      .contiguous() \
-                      .view([batch_size*32*32, num_colours])
-    loss_lab = labels.transpose(1,3) \
-                      .contiguous() \
-                      .view([batch_size*32*32])
+    loss_out = outputs.transpose(1, 3) \
+        .contiguous() \
+        .view([batch_size * 32 * 32, num_colours])
+    loss_lab = labels.transpose(1, 3) \
+        .contiguous() \
+        .view([batch_size * 32 * 32])
     return criterion(loss_out, loss_lab)
 
+
 def run_validation_step(cnn, criterion, test_grey, test_rgb_cat, batch_size,
-                        colour, plotpath=None):
+                        colour, plotpath = None):
     correct = 0.0
     total = 0.0
     losses = []
@@ -297,15 +429,15 @@ def run_validation_step(cnn, criterion, test_grey, test_rgb_cat, batch_size,
         val_loss = compute_loss(criterion,
                                 outputs,
                                 labels,
-                                batch_size=args.batch_size,
-                                num_colours=num_colours)
+                                batch_size = args.batch_size,
+                                num_colours = num_colours)
         losses.append(val_loss.data[0])
 
-        _, predicted = torch.max(outputs.data, 1, keepdim=True)
+        _, predicted = torch.max(outputs.data, 1, keepdim = True)
         total += labels.size(0) * 32 * 32
         correct += (predicted == labels.data).sum()
 
-    if plotpath: # only plot if a path is provided
+    if plotpath:  # only plot if a path is provided
         plot(xs, ys, predicted.cpu().numpy(), colours, plotpath)
 
     val_loss = np.mean(losses)
@@ -318,32 +450,32 @@ def run_validation_step(cnn, criterion, test_grey, test_rgb_cat, batch_size,
 ######################################################################
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Train colourization")
-    parser.add_argument('--gpu', action='store_true', default=False,
-                        help="Use GPU for training")
-    parser.add_argument('--valid', action="store_true", default=False,
-                        help="Perform validation only (don't train)")
-    parser.add_argument('--checkpoint', default="",
-                        help="Model file to load and save")
-    parser.add_argument('--plot', action="store_true", default=False,
-                        help="Plot outputs every epoch during training")
+    parser = argparse.ArgumentParser(description = "Train colourization")
+    parser.add_argument('--gpu', action = 'store_true', default = False,
+                        help = "Use GPU for training")
+    parser.add_argument('--valid', action = "store_true", default = False,
+                        help = "Perform validation only (don't train)")
+    parser.add_argument('--checkpoint', default = "",
+                        help = "Model file to load and save")
+    parser.add_argument('--plot', action = "store_true", default = False,
+                        help = "Plot outputs every epoch during training")
     parser.add_argument('-c', '--colours',
-                        default='colours/colour_kmeans24_cat7.npy',
-                        help="Discrete colour clusters to use")
-    parser.add_argument('-m', '--model', choices=["CNN", "UNet", "DUNet"],
-                        help="Model to run")
-    parser.add_argument('-k', '--kernel', default=3, type=int,
-                        help="Convolution kernel size")
-    parser.add_argument('-f', '--num_filters', default=32, type=int,
-                        help="Base number of convolution filters")
-    parser.add_argument('-l', '--learn_rate', default=0.001, type=float,
-                        help="Learning rate")
-    parser.add_argument('-b', '--batch_size', default=100, type=int,
-                        help="Batch size")
-    parser.add_argument('-e', '--epochs', default=25, type=int,
-                        help="Number of epochs to train")
-    parser.add_argument('-s', '--seed', default=0, type=int,
-                        help="Numpy random seed")
+                        default = 'colours/colour_kmeans24_cat7.npy',
+                        help = "Discrete colour clusters to use")
+    parser.add_argument('-m', '--model', choices = ["CNN", "UNet", "DUNet"],
+                        help = "Model to run")
+    parser.add_argument('-k', '--kernel', default = 3, type = int,
+                        help = "Convolution kernel size")
+    parser.add_argument('-f', '--num_filters', default = 32, type = int,
+                        help = "Base number of convolution filters")
+    parser.add_argument('-l', '--learn_rate', default = 0.001, type = float,
+                        help = "Learning rate")
+    parser.add_argument('-b', '--batch_size', default = 100, type = int,
+                        help = "Batch size")
+    parser.add_argument('-e', '--epochs', default = 25, type = int,
+                        help = "Number of epochs to train")
+    parser.add_argument('-s', '--seed', default = 0, type = int,
+                        help = "Numpy random seed")
 
     args = parser.parse_args()
 
@@ -362,12 +494,12 @@ if __name__ == '__main__':
         cnn = CNN(args.kernel, args.num_filters, num_colours)
     elif args.model == "UNet":
         cnn = UNet(args.kernel, args.num_filters, num_colours)
-    else: # model == "DUNet":
+    else:  # model == "DUNet":
         cnn = DilatedUNet(args.kernel, args.num_filters, num_colours)
 
     # LOSS FUNCTION
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(cnn.parameters(), lr=args.learn_rate)
+    optimizer = torch.optim.Adam(cnn.parameters(), lr = args.learn_rate)
 
     # DATA
     print("Loading data...")
@@ -389,7 +521,8 @@ if __name__ == '__main__':
             raise ValueError("You need to give trained model to evaluate")
 
         print("Loading checkpoint...")
-        cnn.load_state_dict(torch.load(args.checkpoint, map_location=lambda storage, loc: storage))
+        cnn.load_state_dict(
+            torch.load(args.checkpoint, map_location = lambda storage, loc: storage))
         img_path = "outputs/eval_%s.png" % args.model
         val_loss, val_acc = run_validation_step(cnn,
                                                 criterion,
@@ -404,7 +537,8 @@ if __name__ == '__main__':
         exit(0)
 
     print("Beginning training ...")
-    if args.gpu: cnn.cuda()
+    if args.gpu:
+        cnn.cuda()
     start = time.time()
 
     train_losses = []
@@ -412,7 +546,7 @@ if __name__ == '__main__':
     valid_accs = []
     for epoch in range(args.epochs):
         # Train the Model
-        cnn.train() # Change model to 'train' mode
+        cnn.train()  # Change model to 'train' mode
         losses = []
         for i, (xs, ys) in enumerate(get_batch(train_grey,
                                                train_rgb_cat,
@@ -425,15 +559,15 @@ if __name__ == '__main__':
             loss = compute_loss(criterion,
                                 outputs,
                                 labels,
-                                batch_size=args.batch_size,
-                                num_colours=num_colours)
+                                batch_size = args.batch_size,
+                                num_colours = num_colours)
             loss.backward()
             optimizer.step()
             losses.append(loss.data[0])
 
         # plot training images
         if args.plot:
-            _, predicted = torch.max(outputs.data, 1, keepdim=True)
+            _, predicted = torch.max(outputs.data, 1, keepdim = True)
             plot(xs, ys, predicted.cpu().numpy(), colours,
                  'outputs/train_%d.png' % epoch)
 
@@ -442,7 +576,7 @@ if __name__ == '__main__':
         train_losses.append(avg_loss)
         time_elapsed = time.time() - start
         print('Epoch [%d/%d], Loss: %.4f, Time (s): %d' % (
-            epoch+1, args.epochs, avg_loss, time_elapsed))
+            epoch + 1, args.epochs, avg_loss, time_elapsed))
 
         # Evaluate the model
         cnn.eval()  # Change model to 'eval' mode (BN uses moving mean/var).
@@ -463,11 +597,11 @@ if __name__ == '__main__':
         valid_losses.append(val_loss)
         valid_accs.append(val_acc)
         print('Epoch [%d/%d], Val Loss: %.4f, Val Acc: %.1f%%, Time(s): %d' % (
-            epoch+1, args.epochs, val_loss, val_acc, time_elapsed))
+            epoch + 1, args.epochs, val_loss, val_acc, time_elapsed))
 
     # Plot training curve
-    plt.plot(train_losses, "ro-", label="Train")
-    plt.plot(valid_losses, "go-", label="Validation")
+    plt.plot(train_losses, "ro-", label = "Train")
+    plt.plot(valid_losses, "go-", label = "Validation")
     plt.legend()
     plt.title("Loss")
     plt.xlabel("Epochs")

@@ -8,13 +8,14 @@ import os
 import numpy as np
 import numpy.random as npr
 import scipy.misc
-import torch 
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 from load_data import load_cifar10
 
 from colourization import process, get_batch, MyConv2d
+
 
 class RegressionCNN(nn.Module):
     def __init__(self, kernel, num_filters):
@@ -23,48 +24,60 @@ class RegressionCNN(nn.Module):
         padding = kernel // 2
 
         self.downconv1 = nn.Sequential(
-            nn.Conv2d(1, num_filters, kernel_size=kernel, padding=padding),
+            nn.Conv2d(1, num_filters, kernel_size = kernel, padding = padding),
             nn.MaxPool2d(2),
             nn.BatchNorm2d(num_filters),
             nn.ReLU())
+
         self.downconv2 = nn.Sequential(
-            nn.Conv2d(num_filters, num_filters*2, kernel_size=kernel, padding=padding),
+            nn.Conv2d(num_filters, num_filters * 2, kernel_size = kernel,
+                      padding = padding),
             nn.MaxPool2d(2),
-            nn.BatchNorm2d(num_filters*2),
+            nn.BatchNorm2d(num_filters * 2),
             nn.ReLU())
 
         self.rfconv = nn.Sequential(
-            nn.Conv2d(num_filters*2, num_filters*2, kernel_size=kernel, padding=padding),
-            nn.BatchNorm2d(num_filters*2),
+            nn.Conv2d(num_filters * 2, num_filters * 2, kernel_size = kernel,
+                      padding = padding),
+            nn.BatchNorm2d(num_filters * 2),
             nn.ReLU())
 
         self.upconv1 = nn.Sequential(
-            nn.Conv2d(num_filters*2, num_filters, kernel_size=kernel, padding=padding),
-            nn.Upsample(scale_factor=2),
+            nn.Conv2d(num_filters * 2, num_filters, kernel_size = kernel,
+                      padding = padding),
+            nn.Upsample(scale_factor = 2),
             nn.BatchNorm2d(num_filters),
             nn.ReLU())
+
         self.upconv2 = nn.Sequential(
-            nn.Conv2d(num_filters, 3, kernel_size=kernel, padding=padding),
-            nn.Upsample(scale_factor=2),
+            nn.Conv2d(num_filters, 3, kernel_size = kernel, padding = padding),
+            nn.Upsample(scale_factor = 2),
             nn.BatchNorm2d(3),
             nn.ReLU())
 
-        self.finalconv = MyConv2d(3, 3, kernel_size=kernel)
+        self.finalconv = MyConv2d(3, 3, kernel_size = kernel)
 
     def forward(self, x):
         out = self.downconv1(x)
+        # print("out 1: {}".format(out.shape))
         out = self.downconv2(out)
+        # print("out 2: {}".format(out.shape))
         out = self.rfconv(out)
+        # print("out 3: {}".format(out.shape))
         out = self.upconv1(out)
+        # print("out 4: {}".format(out.shape))
         out = self.upconv2(out)
+        # print("out 5: {}".format(out.shape))
         out = self.finalconv(out)
+        # print("out final: {}".format(out.shape))
         return out
+
 
 ######################################################################
 # Training
 ######################################################################
 
-def get_torch_vars(xs, ys, gpu=False):
+def get_torch_vars(xs, ys, gpu = False):
     """
     Helper function to convert numpy arrays to pytorch tensors.
     If GPU is used, move the tensors to GPU.
@@ -83,7 +96,8 @@ def get_torch_vars(xs, ys, gpu=False):
         ys = ys.cuda()
     return Variable(xs), Variable(ys)
 
-def train(cnn, epochs=80, learn_rate=0.001, batch_size=100, gpu=True):
+
+def train(cnn, epochs = 80, learn_rate = 0.001, batch_size = 100, gpu = True):
     """
     Train a regression CNN. Note that you do not need this function.
     Included for refrence.
@@ -93,7 +107,7 @@ def train(cnn, epochs=80, learn_rate=0.001, batch_size=100, gpu=True):
 
     # Set up L2 loss
     criterion = nn.MSELoss()
-    optimizer = torch.optim.Adam(cnn.parameters(), lr=learn_rate)
+    optimizer = torch.optim.Adam(cnn.parameters(), lr = learn_rate)
 
     # Loading & transforming data
     (x_train, y_train), (x_test, y_test) = load_cifar10()
@@ -104,7 +118,7 @@ def train(cnn, epochs=80, learn_rate=0.001, batch_size=100, gpu=True):
 
     for epoch in range(epochs):
         # Train the Model
-        cnn.train() # Change model to 'train' mode
+        cnn.train()  # Change model to 'train' mode
         for i, (xs, ys) in enumerate(get_batch(train_grey,
                                                train_rgb,
                                                batch_size)):
@@ -116,8 +130,8 @@ def train(cnn, epochs=80, learn_rate=0.001, batch_size=100, gpu=True):
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
-            
-        print('Epoch [%d/%d], Loss: %.4f' % (epoch+1, epochs, loss.data[0]))
+
+        print('Epoch [%d/%d], Loss: %.4f' % (epoch + 1, epochs, loss.data[0]))
 
         # Evaluate the model
         cnn.eval()  # Change model to 'eval' mode (BN uses moving mean/var).
@@ -132,11 +146,12 @@ def train(cnn, epochs=80, learn_rate=0.001, batch_size=100, gpu=True):
             losses.append(val_loss.data[0])
 
         val_loss = np.mean(losses)
-        print('Epoch [%d/%d], Val Loss: %.4f' % (epoch+1, epochs, val_loss))
+        print('Epoch [%d/%d], Val Loss: %.4f' % (epoch + 1, epochs, val_loss))
 
     # Save the Trained Model
     torch.save(cnn.state_dict(), 'regression_cnn_k%d_f%d.pkl' % (
         args.kernel, args.num_filters))
+
 
 def plot(grey, gtcolour, predcolour, path):
     """
@@ -148,28 +163,29 @@ def plot(grey, gtcolour, predcolour, path):
       predcolour: numpy tenosor of shape Nx3xHxW
       path: path to save the image
     """
-    grey = np.transpose(grey, [0,2,3,1])
-    gtcolour = np.transpose(gtcolour, [0,2,3,1])
-    predcolour = np.transpose(predcolour, [0,2,3,1])
+    grey = np.transpose(grey, [0, 2, 3, 1])
+    gtcolour = np.transpose(gtcolour, [0, 2, 3, 1])
+    predcolour = np.transpose(predcolour, [0, 2, 3, 1])
 
     img = np.vstack([
-      np.hstack(np.tile(grey, [1,1,1,3])),
-      np.hstack(gtcolour),
-      np.hstack(predcolour)])
-    scipy.misc.toimage(img, cmin=0, cmax=1).save(path)
+        np.hstack(np.tile(grey, [1, 1, 1, 3])),
+        np.hstack(gtcolour),
+        np.hstack(predcolour)])
+    scipy.misc.toimage(img, cmin = 0, cmax = 1).save(path)
+
 
 ######################################################################
 # MAIN
 ######################################################################
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Train colourization")
-    parser.add_argument('--gpu', action='store_true', default=False,
-                        help="Use GPU for training")
-    parser.add_argument('-k', '--kernel', default=3,
-                        help="Convolution kernel size")
-    parser.add_argument('-f', '--num_filters', default=32,
-                        help="Base number of convolution filters")
+    parser = argparse.ArgumentParser(description = "Train colourization")
+    parser.add_argument('--gpu', action = 'store_true', default = False,
+                        help = "Use GPU for training")
+    parser.add_argument('-k', '--kernel', default = 3,
+                        help = "Convolution kernel size")
+    parser.add_argument('-f', '--num_filters', default = 32,
+                        help = "Base number of convolution filters")
     args = parser.parse_args()
 
     npr.seed(0)
@@ -178,10 +194,12 @@ if __name__ == '__main__':
 
     # Uncomment to train. You do not need this for the assignment.
     # Included for completeness
-    #train(cnn); exit(0)
+    # train(cnn); exit(0)
 
     print("Loading weights...")
-    checkpoint = torch.load('weights/regression_cnn_k%d_f%d.pkl' % (args.kernel, args.num_filters), map_location=lambda storage, loc: storage)
+    checkpoint = torch.load(
+        'weights/regression_cnn_k%d_f%d.pkl' % (args.kernel, args.num_filters),
+        map_location = lambda storage, loc: storage)
     cnn.load_state_dict(checkpoint)
 
     print("Loading data...")
@@ -191,11 +209,10 @@ if __name__ == '__main__':
     # Create output folder if not created
     if not os.path.exists("outputs"):
         os.makedirs("outputs")
-    
+
     print("Generating predictions...")
     grey = test_grey[:15]
     gtrgb = test_rgb[:15]
     predrgb = cnn(Variable(torch.from_numpy(grey).float()))
-    predrgb = predrgb.data.numpy() 
+    predrgb = predrgb.data.numpy()
     plot(grey, gtrgb, predrgb, "outputs/regression_output.png")
-
