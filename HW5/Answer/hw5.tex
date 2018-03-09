@@ -126,8 +126,77 @@
 	%---------------------------------------------------------------------------------
 	
 	\begin{homeworkProblem}
-	
 		
+		Let $\mathbf{x}^{ (t) }$ be a $2 \times 1$ vector containing $x_1$ and $x_2$ as the binary input at time $t$
+		
+		Let $\mathbf{h}^{ (t) }$ be a $3 \times 1$ vector containing $h_1$, $h_2$ and $h_3$ at time $t$ as hinted in the handout.
+		
+		Let $y^{ (t) }$ be a scaler of the output binary digit.\\
+		
+		We let 
+		\begin{align*}
+			% U
+			\mathbf{U} &= 
+			\begin{Bmatrix}
+			1 & 1 \\
+			1 & 1 \\
+			1 & 1 \\
+			\end{Bmatrix}\\
+			% W
+			\mathbf{W} &= 
+			\begin{Bmatrix}
+			1 & 1 & 1 \\
+			1 & 1 & 1 \\
+			1 & 1 & 1 \\
+			\end{Bmatrix}\\
+			% b_h
+			\mathbf{b_h} &= 
+			\begin{Bmatrix}
+			-0.5 \\
+			-1.5 \\
+			-2.5 \\
+			\end{Bmatrix}\\
+			% v
+			\mathbf{v} &= 
+			\begin{Bmatrix}
+			1 & -1 & 1 \\
+			\end{Bmatrix}\\
+			% b_y
+			b_y &= -0.5
+		\end{align*}
+		
+		Then for all $t \geq 1$,
+		\begin{align}
+			\mathbf{h}^{ (t) } &= \mathbf{U} \mathbf{x}^{ (t) } + \mathbf{W} \mathbf{h}^{ (t - 1) } + \mathbf{b_h}\\
+			y^{ (t) } &= \mathbf{v} \mathbf{h}^{ (t) } + b_y
+		\end{align}
+		
+		Expanding Equation (1), we get
+		\begin{align*}
+			h^{ (t) }_{1} &= x^{ (t) }_1 + x^{ (t) }_2 + h^{ (t - 1) }_1 - 0.5 \\
+			h^{ (t) }_{2} &= x^{ (t) }_1 + x^{ (t) }_2 + h^{ (t - 1) }_2 - 1.5 \\
+			h^{ (t) }_{3} &=x^{ (t) }_1 + x^{ (t) }_2 + h^{ (t - 1) }_3 - 2.5 \\
+			y^{ (t) } &= h^{ (t) }_{1} - h^{ (t) }_{2} + h^{ (t) }_{3} - 0.5
+		\end{align*}
+		
+		This satisfies the Truth table:
+		\begin{table}[h!]
+			\centering
+			\begin{tabular}{||c c  | c c | cc | cc | c||} 
+				\hline
+				$x_1$ & $x_2$ & $h^{(t - 1)}_1$ & $h^{(t)}_1$ & $h^{(t - 1)}_2$ & $h^{(t)}_2$ & $h^{(t - 1)}_3$ & $h^{(t)}_3$ & y\\ [0.5ex] 
+				\hline\hline
+				0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\ \hline
+				0 & 0 & 1 & 1 & 1 & 0 & 1 & 0 & 1 \\ \hline
+				0 & 1 & 0 & 1 & 0 & 0 & 0 & 0 & 1 \\ \hline
+				0 & 1 & 1 & 1 & 1 & 1 & 1 & 0 & 0 \\ \hline
+				1 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 1 \\ \hline
+				1 & 0 & 1 & 1 & 1 & 1 & 1 & 0 & 0 \\ \hline
+				1 & 1 & 0 & 1 & 0 & 1 & 0 & 0 & 0 \\ \hline
+				1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 \\ [1ex] 
+				\hline
+			\end{tabular}
+		\end{table}
 		
 	\end{homeworkProblem}
 	\clearpage
@@ -140,7 +209,42 @@
 	
 	\begin{homeworkProblem}
 		
-		
+		\begin{enumerate}
+			\item 
+			\begin{align*}
+				\overline{h^{ (t) }} & = 
+					1 + \overline{i^{ (t + 1) }} \dfrac{ \partial i^{ (t + 1) } }{ \partial h^{ (t + 1) } } + \overline{f^{ (t + 1) }} \dfrac{ \partial f^{ (t + 1) } }{ \partial h^{ (t + 1) } } + \overline{o^{ (t + 1) }} \dfrac{ \partial o^{ (t + 1) } }{ \partial h^{ (t + 1) } } + \overline{g^{ (t + 1) }} \dfrac{ \partial g^{ (t + 1) } }{ \partial h^{ (t + 1) } } \\
+					&= 1 + \overline{i^{ (t + 1) }} \sigma^{-1}(w_{ix} x^{(t + 1)} + w_{ih} h^{(t + 1)}) w_{ih} 
+					+  \overline{f^{ (t + 1) }} \sigma^{-1}(w_{fx} x^{(t + 1)} + w_{fh} h^{(t + 1)}) w_{fh}\\
+					&\ \ \ 
+					+ \overline{o^{ (t + 1) }} \sigma^{-1}(w_{ox} x^{(t + 1)} + w_{oh} h^{(t + 1)}) w_{oh} 
+					+ \overline{g^{ (t + 1) }} \tanh^{-1}(w_{gx} x^{(t + 1)} + w_{gh} h^{(t + 1)}) w_{gh} \\
+				\overline{c^{ (t) }} & = 
+					\overline{h^{ (t) }} \dfrac{ \partial h^{ (t) } }{ \partial c^{ (t) } } 
+					+ \overline{c^{ (t + 1) }} \dfrac{c^{ (t + 1) }}{c^{ (t) }} \\
+					&= \overline{h^{ (t) }} o^{ (t) } \tanh^{-1}(c^{(t)}) + \overline{c^{ (t + 1) }} f^{(t)}\\
+				\overline{g^{ (t) }} & = 
+					\overline{c^{ (t) }} \dfrac{ \partial c^{ (t) } }{ \partial g^{ (t) } } \\
+					&= \overline{c^{ (t) }} i^{(t)}\\
+				\overline{o^{ (t) }} & = 
+					\overline{h^{ (t) }} \dfrac{ \partial h^{ (t) } }{ \partial o^{ (t) } } \\
+					&= \overline{h^{ (t) }} \tanh(c^{(t)}) \\
+				\overline{f^{ (t) }} & = 
+					\overline{c^{ (t) }} \dfrac{ \partial c^{ (t) } }{ \partial f^{ (t) } } \\
+					&= \overline{c^{ (t) }} c^{ (t - 1) } \\
+				\overline{i^{ (t) }} & = 
+					\overline{c^{ (t) }} \dfrac{ \partial c^{ (t) } }{ \partial i^{ (t) } } \\
+					&= \overline{c^{ (t) }} g^{(t)}
+			\end{align*}
+			
+			\item 
+			
+			
+			\item
+			
+			
+			
+		\end{enumerate}
 		
 	\end{homeworkProblem}
 	\clearpage
