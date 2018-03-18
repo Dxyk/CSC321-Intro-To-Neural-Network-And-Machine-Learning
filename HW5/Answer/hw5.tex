@@ -221,7 +221,7 @@
 					+ \overline{g^{ (t + 1) }} \tanh^{-1}(w_{gx} x^{(t + 1)} + w_{gh} h^{(t + 1)}) w_{gh} \\
 				\overline{c^{ (t) }} & = 
 					\overline{h^{ (t) }} \dfrac{ \partial h^{ (t) } }{ \partial c^{ (t) } } 
-					+ \overline{c^{ (t + 1) }} \dfrac{c^{ (t + 1) }}{c^{ (t) }} \\
+					+ \overline{ c^{ (t + 1) }} \dfrac{\partial c^{ (t + 1) }}{\partial c^{ (t) }} \\
 					&= \overline{h^{ (t) }} o^{ (t) } \tanh^{-1}(c^{(t)}) + \overline{c^{ (t + 1) }} f^{(t)}\\
 				\overline{g^{ (t) }} & = 
 					\overline{c^{ (t) }} \dfrac{ \partial c^{ (t) } }{ \partial g^{ (t) } } \\
@@ -232,9 +232,8 @@
 				\overline{f^{ (t) }} & = 
 					\overline{c^{ (t) }} \dfrac{ \partial c^{ (t) } }{ \partial f^{ (t) } } \\
 					&= \overline{c^{ (t) }} c^{ (t - 1) } \\
-				\overline{i^{ (t) }} & = 
-					\overline{c^{ (t) }} \dfrac{ \partial c^{ (t) } }{ \partial i^{ (t) } } \\
-					&= \overline{c^{ (t) }} g^{(t)}
+				\overline{i^{ (t) }} &= 
+					\overline{c^{ (t) }} g^{(t)}
 			\end{align*}
 			
 			\item 
@@ -243,7 +242,24 @@
 			\end{align*}
 			
 			\item
-			
+			This is because when $f^{(t)} = 1, i^{(t)} = 0$ and $o^{(t)} = 0$, 
+
+			\begin{align*}
+				\overline{c^{ (t) }} & = 
+					\overline{h^{ (t) }} o^{ (t) } \tanh^{-1}(c^{(t)}) + \overline{c^{ (t + 1) }} f^{(t)}\\
+					&= \overline{c^{ (t + 1) }}\\
+				\overline{g^{ (t) }} & = 
+					\overline{c^{ (t) }} i^{(t)}\\
+					&= 0\\
+				\overline{o^{ (t) }} & = 
+					\overline{h^{ (t) }} \tanh(c^{(t)}) \\
+				\overline{f^{ (t) }} & = 
+					\overline{c^{ (t) }} c^{ (t - 1) } \\
+				\overline{i^{ (t) }} & = 
+					\overline{c^{ (t) }} \dfrac{ \partial c^{ (t) } }{ \partial i^{ (t) } } \\
+					&= \overline{c^{ (t) }} g^{(t)}
+			\end{align*}
+			then $\overline{c^{ (t) }} = \overline{c^{ (t + 1) }}$ stays the same
 			
 			
 		\end{enumerate}
