@@ -23,8 +23,19 @@ import utils
 words = ['roomba',
          'concert',
          'hello',
-         'table'
+         'table',
          # Add your own words here!
+         # rule 1
+         'team',
+         'problematic',
+         # rule 2
+         'ink',
+         'obviously',
+         # rule 3
+         'shy',
+         'philosophical',
+         # others
+         'supercalifragilisticexpialidocious'
         ]
 
 

@@ -16,7 +16,9 @@ class MyGRUCell(nn.Module):
         self.hidden_size = hidden_size
 
         # ------------
-        # FILL THIS IN
+        self.weight_r = nn.Linear(input_size + hidden_size, hidden_size)
+        self.weight_z = nn.Linear(input_size + hidden_size, hidden_size)
+        self.weight_g = nn.Linear(input_size + hidden_size, hidden_size)
         # ------------
 
     def forward(self, x, h_prev):
@@ -31,13 +33,12 @@ class MyGRUCell(nn.Module):
         """
 
         # ------------
-        # FILL THIS IN
-        # ------------
-        # z = ...
-        # r = ...
-        # g = ...
-        # h_new = ...
+        r = F.sigmoid(self.weight_r(torch.cat((x, h_prev), 1)))
+        z = F.sigmoid(self.weight_z(torch.cat((x, h_prev), 1)))
+        g = F.tanh(self.weight_g(torch.cat((x, r * h_prev), 1)))
+        h_new = (1 - z) * g + z * h_prev
         return h_new
+        # ------------
 
 
 class GRUEncoder(nn.Module):
