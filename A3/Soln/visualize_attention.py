@@ -19,6 +19,21 @@ import utils
 
 words = ['roomba',
          # Add your own words here!
+         # consonant*
+         'cake',
+         'labour',
+         # consonant+*
+         'drink',
+         'phone',
+         # unusual
+         'bouquet',
+         'anthropocene',
+         # compound word
+         'p-value',
+         'well-done'
+         # made-up
+         'thimolystically',
+         'supercalifragilisticexpialidocious'
         ]
 
 
