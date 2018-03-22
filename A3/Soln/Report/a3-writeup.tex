@@ -182,10 +182,10 @@
 	%---------------------------------------------------------------------------------
 	\begin{homeworkProblem}
 		%		\noindent \textit{Question}
-		
+		See model.py for implementation
 		
 	\end{homeworkProblem}
-	\clearpage
+	
 	
 	%---------------------------------------------------------------------------------
 	
@@ -195,7 +195,7 @@
 	%---------------------------------------------------------------------------------
 	\begin{homeworkProblem}
 		%		\noindent \textit{Question}
-		
+		See model.py for implementation
 		
 	\end{homeworkProblem}
 	\clearpage
@@ -208,7 +208,57 @@
 	%---------------------------------------------------------------------------------
 	\begin{homeworkProblem}
 		%		\noindent \textit{Question}
+		The words and their translations are given in the listing below. As we can see, simple short words are more likely to produce correct translations. For example, ``cake", ``labour", ``drink" and ``phone" all have the right translations and the visualizations are given in Fig\ref{fig:5.1}. In the visualizations, we see that the network goes linearly through the letters after the first consonant (block). This shows that the network can correctly capture these simple structures of the word.
 		
+		However, the network starts to make mistakes when it gets unusual and long words. For example, ``p-value", ``well-done", ``anthropocene", etc are translated incorrectly. The visualizations are given in Fig\ref{fig:5.2}. We can see that for ``p-value", the network understands that ``p" should be placed at the back but it does not know what to do with the dash ``-". For ``anthropocene", the network successfully understands that no letter needs to be placed at the back but gets lost after the second ``a". This is because the network was not trained enough with these specific structures and thus does not know how to translate them.
+		
+		\begin{lstlisting}[caption = words and predictions]
+	roomba --> ooodrray
+	cake --> akecay
+	labour --> abourlay
+	drink --> inkdray
+	phone --> onephay
+	bouquet --> ouquerbay
+	anthropocene --> anthanthayentay
+	p-value --> -ueyeydray
+	well-done --> elay-onelyyday
+	thimolystically --> ipthallystitesthay
+	supercalifragilisticexpialidocious --> upercacalicalicaalic
+		\end{lstlisting}
+		
+		\begin{figure*}[!ht]
+			\begin{subfigure}{.5\textwidth}
+				\centering
+				\includegraphics[width=.8\linewidth]{images/5/phone.pdf}
+				\caption{phone}
+				\label{fig:5.11}
+			\end{subfigure}
+			\begin{subfigure}{.5\textwidth}
+				\centering
+				\includegraphics[width=.8\linewidth]{images/5/labour.pdf}
+				\caption{labour}
+				\label{fig:5.12}
+			\end{subfigure}
+			\caption{Correct Visualizations}
+			\label{fig:5.1}
+		\end{figure*}
+	
+		\begin{figure*}[!ht]
+			\begin{subfigure}{.5\textwidth}
+				\centering
+				\includegraphics[width=.8\linewidth]{images/5/p-value.pdf}
+				\caption{p-value}
+				\label{fig:5.21}
+			\end{subfigure}
+			\begin{subfigure}{.5\textwidth}
+				\centering
+				\includegraphics[width=.8\linewidth]{images/5/anthropocene.pdf}
+				\caption{anthropocene}
+				\label{fig:5.22}
+			\end{subfigure}
+			\caption{Incorrect Visualizations}
+			\label{fig:5.2}
+		\end{figure*}
 		
 	\end{homeworkProblem}
 	\clearpage
