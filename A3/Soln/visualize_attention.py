@@ -30,7 +30,7 @@ words = ['roomba',
          'anthropocene',
          # compound word
          'p-value',
-         'well-done'
+         'well-done',
          # made-up
          'thimolystically',
          'supercalifragilisticexpialidocious'
