@@ -283,6 +283,13 @@ def training_loop(train_dict, val_dict, idx_dict, encoder, decoder, criterion, o
                 use_teacher_forcing = np.random.rand() < opts.teacher_forcing_ratio
 
                 for i in range(seq_len):
+                    # print "B =", decoder_input.size()[0]
+                    # print "H =", decoder_hidden.size()[1]
+                    # print "S =", encoder_annotations.size()[1]
+                    # print "x:", decoder_input.size()
+                    # print "h_prev:", decoder_hidden.size()
+                    # print "annotations:", encoder_annotations.size()
+                    # print('=' * 30)
                     decoder_output, decoder_hidden, attention_weights = decoder(decoder_input, decoder_hidden, encoder_annotations)
 
                     current_target = targets[:,i]

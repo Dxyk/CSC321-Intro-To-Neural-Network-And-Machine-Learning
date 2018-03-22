@@ -7,6 +7,10 @@ import torch.nn.functional as F
 # Local imports
 import utils
 
+# CONSTANTS
+d_float = torch.FloatTensor
+d_long = torch.LongTensor
+
 
 class MyGRUCell(nn.Module):
     def __init__(self, input_size, hidden_size):
@@ -33,6 +37,7 @@ class MyGRUCell(nn.Module):
         """
 
         # ------------
+        # TODO: FILL THIS IN
         r = F.sigmoid(self.weight_r(torch.cat((x, h_prev), 1)))
         z = F.sigmoid(self.weight_z(torch.cat((x, h_prev), 1)))
         g = F.tanh(self.weight_g(torch.cat((x, r * h_prev), 1)))
@@ -97,14 +102,24 @@ class Attention(nn.Module):
         self.hidden_size = hidden_size
 
         # ------------
-        # FILL THIS IN
+        # TODO: FILL THIS IN
         # ------------
 
         # Create a two layer fully-connected network. Hint: Use nn.Sequential
         # hidden_size*2 --> hidden_size, ReLU, hidden_size --> 1
 
-        # self.attention_network = ...
+        # (B * S, 2H) -> (B * S, H)
+        self.attention_network = nn.Sequential(
+            # in: (N, *, 2 x hid); out: (N, *, hid)
+            nn.Linear(hidden_size * 2, hidden_size),
+            # in: (N, *); out: (N, *)
+            nn.ReLU(),
+            # in: (N, *, hid); out: (N, *, 1)
+            nn.Linear(hidden_size, 1)
+        )
 
+        # (B * S, H) -> (B * S, 1)
+        # in: (N, *, hid); out: (N, *, 1)
         self.softmax = nn.Softmax(dim=1)
 
     def forward(self, hidden, annotations):
@@ -124,16 +139,16 @@ class Attention(nn.Module):
         expanded_hidden = hidden.unsqueeze(1).expand_as(annotations)
 
         # ------------
-        # FILL THIS IN
+        # TODO: FILL THIS IN
         # ------------
 
         # You are free to follow the code template below, or do it a different way,
         # as long as the output is correct.
 
-        # concat = ...
-        # reshaped_for_attention_net = ...
-        # attention_net_output = ...
-        # unnormalized_attention = ...  # Reshape attention net output to have dimension batch_size x seq_len x 1
+        concat = torch.cat((expanded_hidden, annotations), 2)
+        reshaped_for_attention_net = concat.view(-1, 2 * hid_size)
+        attention_net_output = self.attention_network(reshaped_for_attention_net)
+        unnormalized_attention = attention_net_output.view(batch_size, seq_len, 1)  # Reshape attention net output to have dimension batch_size x seq_len x 1
 
         return self.softmax(unnormalized_attention)
 
@@ -166,15 +181,25 @@ class AttentionDecoder(nn.Module):
         """
         embed = self.embedding(x)    # batch_size x 1 x hidden_size
         embed = embed.squeeze(1)     # batch_size x hidden_size
+        # print "embed:", embed.size()  # (B, H)
 
         # ------------
-        # FILL THIS IN
+        # TODO: FILL THIS IN
         # ------------
-        # attention_weights = ...
-        # context = ...
-        # embed_and_context = ...
-        # h_new = ...
-        # output = ...
+        attention_weights = self.attention(embed, annotations)
+        # print "attention:", attention_weights.size()  # (B, S, 1)
+        # print torch.t(torch.squeeze(attention_weights, 2)).size()
+        # TODO: annotation dim?
+        attention_weights_t = torch.transpose(attention_weights, 1, 2)  # (B, S->1, 1->S)
+        context = torch.bmm(attention_weights_t, annotations)  # (B, 1, S), (B, S, H)
+        # context = torch.mm(torch.t(torch.squeeze(attention_weights, 2)), embed)
+        # print "context:", context.size()  # (B, 1, H)
+        # print x.size()
+        context = torch.squeeze(context, 1)
+        # print "context:", context.size()  # (B, H)
+        embed_and_context = torch.cat((context.type(d_float), embed.type(d_float)), 1)
+        h_new = self.rnn(embed_and_context.type(d_float), h_prev.type(d_float))
+        output = self.out(h_new)
         return output, h_new, attention_weights
 
 
