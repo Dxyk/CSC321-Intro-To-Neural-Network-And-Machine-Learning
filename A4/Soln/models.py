@@ -46,7 +46,7 @@ class DCGenerator(nn.Module):
         super(DCGenerator, self).__init__()
 
         ###########################################
-        ##   FILL THIS IN: CREATE ARCHITECTURE   ##
+        # TODO: FILL THIS IN: CREATE ARCHITECTURE #
         ###########################################
 
         # self.deconv1 = deconv(...)
@@ -66,10 +66,10 @@ class DCGenerator(nn.Module):
                 out: BS x channels x image_width x image_height  -->  16x3x32x32
         """
 
-        out = F.relu(self.deconv1(z))    # BS x 128 x 4 x 4
-        out = F.relu(self.deconv2(out))  # BS x 64 x 8 x 8
-        out = F.relu(self.deconv3(out))  # BS x 32 x 16 x 16
-        out = F.tanh(self.deconv4(out))  # BS x 3 x 32 x 32
+        out = F.relu(self.deconv1(z))
+        out = F.relu(self.deconv2(out))
+        out = F.relu(self.deconv3(out))
+        out = F.tanh(self.deconv4(out))
         return out
 
 
@@ -91,7 +91,7 @@ class CycleGenerator(nn.Module):
         super(CycleGenerator, self).__init__()
 
         ###########################################
-        ##   FILL THIS IN: CREATE ARCHITECTURE   ##
+        # TODO: FILL THIS IN: CREATE ARCHITECTURE #
         ###########################################
 
         # 1. Define the encoder part of the generator (that extracts features from the input image)
@@ -117,13 +117,13 @@ class CycleGenerator(nn.Module):
                 out: BS x 3 x 32 x 32
         """
 
-        out = F.relu(self.conv1(x))            # BS x 32 x 16 x 16
-        out = F.relu(self.conv2(out))          # BS x 64 x 8 x 8
+        out = F.relu(self.conv1(x))
+        out = F.relu(self.conv2(out))
 
-        out = F.relu(self.resnet_block(out))   # BS x 64 x 8 x 8
+        out = F.relu(self.resnet_block(out))
 
-        out = F.relu(self.deconv1(out))        # BS x 32 x 16 x 16
-        out = F.tanh(self.deconv2(out))        # BS x 3 x 32 x 32
+        out = F.relu(self.deconv1(out))
+        out = F.tanh(self.deconv2(out))
 
         return out
 
@@ -136,19 +136,18 @@ class DCDiscriminator(nn.Module):
         super(DCDiscriminator, self).__init__()
 
         ###########################################
-        ##   FILL THIS IN: CREATE ARCHITECTURE   ##
+        # TODO: FILL THIS IN: CREATE ARCHITECTURE #
         ###########################################
 
-        # self.conv1 = conv(...)
-        # self.conv2 = conv(...)
-        # self.conv3 = conv(...)
-        # self.conv4 = conv(...)
+        self.conv1 = conv(3, conv_dim, 4)
+        self.conv2 = conv(conv_dim, conv_dim * 2, 4)
+        self.conv3 = conv(conv_dim * 2, conv_dim * 4, 4)
+        self.conv4 = conv(conv_dim * 4, 1, 4, padding = 0, batch_norm = False)
 
     def forward(self, x):
-
-        out = F.relu(self.conv1(x))    # BS x 64 x 16 x 16
-        out = F.relu(self.conv2(out))  # BS x 128 x 8 x 8
-        out = F.relu(self.conv3(out))  # BS x 256 x 4 x 4
+        out = F.relu(self.conv1(x))
+        out = F.relu(self.conv2(out))
+        out = F.relu(self.conv3(out))
 
         out = self.conv4(out).squeeze()
         out = F.sigmoid(out)

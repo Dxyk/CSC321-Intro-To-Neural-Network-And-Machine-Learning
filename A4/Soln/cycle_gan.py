@@ -223,7 +223,7 @@ def training_loop(dataloader_X, dataloader_Y, test_dataloader_X, test_dataloader
         # ============================================
 
         #########################################
-        ##             FILL THIS IN            ##
+        #          TODO: FILL THIS IN           #
         #########################################
 
         # Train with real images
@@ -264,7 +264,7 @@ def training_loop(dataloader_X, dataloader_Y, test_dataloader_X, test_dataloader
 
 
         #########################################
-        ##    FILL THIS IN: Y--X-->Y CYCLE     ##
+        #   TODO: FILL THIS IN: Y--X-->Y CYCLE  #
         #########################################
         g_optimizer.zero_grad()
 
@@ -286,7 +286,7 @@ def training_loop(dataloader_X, dataloader_Y, test_dataloader_X, test_dataloader
 
 
         #########################################
-        ##    FILL THIS IN: X--Y-->X CYCLE     ##
+        #   TODO: FILL THIS IN: X--Y-->X CYCLE  #
         #########################################
 
         g_optimizer.zero_grad()
