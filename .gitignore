@@ -2,6 +2,8 @@
 **/temp/
 A3/Soln/checkpoints/*
 A4/Soln/emojis/*
+A4/Soln/checkpoints_vanilla/*
+A4/Soln/samples_vanilla/*
 
 ## Core latex/pdflatex auxiliary files:
 *.aux
