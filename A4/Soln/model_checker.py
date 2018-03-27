@@ -122,6 +122,12 @@ def check_cycle_generator():
     if np.allclose(output_np, cycle_generator_expected):
         print('CycleGenerator output: EQUAL')
     else:
+        print output_np.shape
+        print cycle_generator_expected.shape
+        if output_np.shape == cycle_generator_expected.shape:
+            print output_np
+            print "-" * 50
+            print cycle_generator_expected
         print('CycleGenerator output: NOT EQUAL')
 
     num_params = count_parameters(G_XtoY)
@@ -145,8 +151,8 @@ if __name__ == '__main__':
     # except:
     #     print('Crashed while checking DCDiscriminator. Maybe not implemented yet?')
 
-    # check_cycle_generator()
-    try:
-        check_cycle_generator()
-    except:
-        print('Crashed while checking CycleGenerator. Maybe not implemented yet?')
+    check_cycle_generator()
+    # try:
+    #     check_cycle_generator()
+    # except:
+    #     print('Crashed while checking CycleGenerator. Maybe not implemented yet?')

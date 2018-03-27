@@ -74,61 +74,6 @@ class DCGenerator(nn.Module):
         return out
 
 
-class ResnetBlock(nn.Module):
-    def __init__(self, conv_dim):
-        super(ResnetBlock, self).__init__()
-        self.conv_layer = conv(in_channels=conv_dim, out_channels=conv_dim, kernel_size=3, stride=1, padding=1)
-
-    def forward(self, x):
-        out = x + self.conv_layer(x)
-        return out
-
-
-class CycleGenerator(nn.Module):
-    """Defines the architecture of the generator network.
-       Note: Both generators G_XtoY and G_YtoX have the same architecture in this assignment.
-    """
-    def __init__(self, conv_dim=64, init_zero_weights=False):
-        super(CycleGenerator, self).__init__()
-
-        ###########################################
-        # TODO: FILL THIS IN: CREATE ARCHITECTURE #
-        ###########################################
-
-        # 1. Define the encoder part of the generator (that extracts features from the input image)
-        # self.conv1 = conv(...)
-        # self.conv2 = conv(...)
-
-        # 2. Define the transformation part of the generator
-        # self.resnet_block = ...
-
-        # 3. Define the decoder part of the generator (that builds up the output image from features)
-        # self.deconv1 = deconv(...)
-        # self.deconv2 = deconv(...)
-
-    def forward(self, x):
-        """Generates an image conditioned on an input image.
-
-            Input
-            -----
-                x: BS x 3 x 32 x 32
-
-            Output
-            ------
-                out: BS x 3 x 32 x 32
-        """
-
-        out = F.relu(self.conv1(x))
-        out = F.relu(self.conv2(out))
-
-        out = F.relu(self.resnet_block(out))
-
-        out = F.relu(self.deconv1(out))
-        out = F.tanh(self.deconv2(out))
-
-        return out
-
-
 class DCDiscriminator(nn.Module):
     """Defines the architecture of the discriminator network.
        Note: Both discriminators D_X and D_Y have the same architecture in this assignment.
@@ -153,3 +98,61 @@ class DCDiscriminator(nn.Module):
         out = self.conv4(out).squeeze()
         out = F.sigmoid(out)
         return out
+
+
+class ResnetBlock(nn.Module):
+    def __init__(self, conv_dim):
+        super(ResnetBlock, self).__init__()
+        self.conv_layer = conv(in_channels=conv_dim, out_channels=conv_dim, kernel_size=3, stride=1, padding=1)
+
+    def forward(self, x):
+        out = x + self.conv_layer(x)
+        return out
+
+
+class CycleGenerator(nn.Module):
+    """Defines the architecture of the generator network.
+       Note: Both generators G_XtoY and G_YtoX have the same architecture in this assignment.
+    """
+    def __init__(self, conv_dim=64, init_zero_weights=False):
+        super(CycleGenerator, self).__init__()
+
+        ###########################################
+        # TODO: FILL THIS IN: CREATE ARCHITECTURE #
+        ###########################################
+        # TODO: not exactly the same with checker but close enough
+
+        # 1. Define the encoder part of the generator (that extracts features from the input image)
+        self.conv1 = conv(3, conv_dim, 4, init_zero_weights = init_zero_weights)
+        self.conv2 = conv(conv_dim, conv_dim * 2, 4)
+
+        # 2. Define the transformation part of the generator
+        self.resnet_block = ResnetBlock(conv_dim * 2)
+
+        # 3. Define the decoder part of the generator (that builds up the output image from features)
+        self.deconv1 = deconv(conv_dim * 2, conv_dim, 4)
+        self.deconv2 = deconv(conv_dim, 3, 4, batch_norm = False)
+
+    def forward(self, x):
+        """Generates an image conditioned on an input image.
+
+            Input
+            -----
+                x: BS x 3 x 32 x 32
+
+            Output
+            ------
+                out: BS x 3 x 32 x 32
+        """
+
+        out = F.relu(self.conv1(x))
+        out = F.relu(self.conv2(out))
+
+        out = F.relu(self.resnet_block(out))
+
+        out = F.relu(self.deconv1(out))
+        out = F.tanh(self.deconv2(out))
+
+        return out
+
+
