@@ -159,7 +159,7 @@
 			See implementation in models.py
 			
 			\item \large{\textbf{Experiment}}\\
-			sample from iteration 200 and 5000 are shown in Fig\ref{fig:1}.
+			Samples from iterations 200 and 5000 are shown in Fig\ref{fig:1}.
 			The sample improves in their resolution and quality. We can clearly see what each emoji is (human figure or objects) after a very long period of iterations.
 			
 			
@@ -195,12 +195,99 @@
 
 		\begin{enumerate}
 			\item \large{\textbf{Generator}}\\
-			
+			See implementation in model.py
 			
 			\item \large{\textbf{CycleGAN Training Loop}}\\
+			See implementation in cycle\_gan.py
 			
-			
-			\item \large{\textbf{CycleGAN Experiments}}\\
+			\item \large{\textbf{CycleGAN Experiments}}
+			\begin{enumerate}
+				\item 
+				The samples without cycle-consistency loss at iteration 400 are shown in Fig\ref{fig:2}
+				
+				\begin{figure*}[!ht]
+					\centering
+					\begin{subfigure}{.45\textwidth}
+						\centering
+						\includegraphics[width=.8\linewidth]{images/sample-000400-X-Y.png}
+						\caption{Sample from iteration 200}
+						\label{fig:2.1}
+					\end{subfigure}
+					\begin{subfigure}{.45\textwidth}
+						\centering
+						\includegraphics[width=.8\linewidth]{images/sample-000400-Y-X.png}
+						\caption{Sample from iteration 5000}
+						\label{fig:2.2}
+					\end{subfigure}
+					\caption{}
+					\label{fig:2}
+				\end{figure*}
+				
+				\item 
+				The samples with cycle-consistency loss at iteration 400 are shown in Fig\ref{fig:3}
+				
+				\begin{figure*}[!ht]
+					\centering
+					\begin{subfigure}{.45\textwidth}
+						\centering
+						\includegraphics[width=.8\linewidth]{images/sample-000400-X-Y.png}
+						\caption{Sample from iteration 200}
+						\label{fig:3.1}
+					\end{subfigure}
+					\begin{subfigure}{.45\textwidth}
+						\centering
+						\includegraphics[width=.8\linewidth]{images/sample-000400-Y-X.png}
+						\caption{Sample from iteration 5000}
+						\label{fig:3.2}
+					\end{subfigure}
+					\caption{}
+					\label{fig:3}
+				\end{figure*}
+				
+				\item 
+				The samples from the pre-trained network without cycle-consistency loss are shown in Fig\ref{fig:4}
+				
+				\begin{figure*}[!ht]
+					\centering
+					\begin{subfigure}{.45\textwidth}
+						\centering
+						\includegraphics[width=.8\linewidth]{images/sample-000100-X-Y.png}
+						\caption{Sample from iteration 200}
+						\label{fig:4.1}
+					\end{subfigure}
+					\begin{subfigure}{.45\textwidth}
+						\centering
+						\includegraphics[width=.8\linewidth]{images/sample-000100-Y-X.png}
+						\caption{Sample from iteration 5000}
+						\label{fig:4.2}
+					\end{subfigure}
+					\caption{}
+					\label{fig:4}
+				\end{figure*}
+				
+				\item 
+				The samples from the pre-trained network with cycle-consistency loss are shown in Fig\ref{fig:4}
+				
+				\begin{figure*}[!ht]
+					\centering
+					\begin{subfigure}{.45\textwidth}
+						\centering
+						\includegraphics[width=.8\linewidth]{images/sample-000100-X-Y.png}
+						\caption{Sample from iteration 200}
+						\label{fig:5.1}
+					\end{subfigure}
+					\begin{subfigure}{.45\textwidth}
+						\centering
+						\includegraphics[width=.8\linewidth]{images/sample-000100-Y-X.png}
+						\caption{Sample from iteration 5000}
+						\label{fig:5.2}
+					\end{subfigure}
+					\caption{}
+					\label{fig:5}
+					\end{figure*}
+				
+				\item 
+			\end{enumerate}
 		\end{enumerate}
 				
 	\end{homeworkProblem}
