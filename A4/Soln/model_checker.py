@@ -63,6 +63,11 @@ def check_dc_generator():
     if np.allclose(output_np, dc_generator_expected):
         print('DCGenerator output: EQUAL')
     else:
+        print output_np.shape
+        print dc_generator_expected.shape
+        if output_np.shape == dc_generator_expected.shape:
+            print output_np
+            print dc_generator_expected
         print('DCGenerator output: NOT EQUAL')
 
     num_params = count_parameters(G)
@@ -135,11 +140,12 @@ if __name__ == '__main__':
     # except:
     #     print('Crashed while checking DCGenerator. Maybe not implemented yet?')
 
-    try:
-        check_dc_discriminator()
-    except:
-        print('Crashed while checking DCDiscriminator. Maybe not implemented yet?')
+    # try:
+    #     check_dc_discriminator()
+    # except:
+    #     print('Crashed while checking DCDiscriminator. Maybe not implemented yet?')
 
+    # check_cycle_generator()
     try:
         check_cycle_generator()
     except:

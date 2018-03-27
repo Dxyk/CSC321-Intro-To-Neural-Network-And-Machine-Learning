@@ -128,9 +128,81 @@
 	%	PROBLEM 1
 	%---------------------------------------------------------------------------------
 	\begin{homeworkProblem}
-		%		\noindent \textit{Question}
 		
+		\begin{enumerate}
+			\item \large{\textbf{Implement the Discriminator of the DCGAN}}
+			\begin{enumerate}
+				\item 
+				Let $P = \text{number of padding}$, $W = \text{input width}$, $K = \text{kernel size}$, $S = \text{stride}$, $O = \text{output width}$
+				
+				According to the structure of the convolutional network, 
+				\begin{align*}
+					O &= \dfrac{W}{2}
+				\end{align*}
+				
+				Using the formula for calculating output dimension
+				\begin{align*}
+					O &= \frac{W - K + 2P}{S} \\
+					P &= \frac{S (\frac{W}{2} - 1) + K - W}{2} \\
+						&= \frac{2 (\frac{W}{2} - 1) + 4 - W}{2} \\
+						&= \frac{W - 2 + 4 - W}{2} \\
+						&= 1
+				\end{align*}
+				
+				\item
+				See implementation in models.py
+			\end{enumerate}
+			
+			%-----------------------------------------------------------------------------
+			
+			\item \large{\textbf{Generator}}\\
+			See implementation in models.py
+			
+			\item \large{\textbf{Experiment}}\\
+			sample from iteration 200 and 5000 are shown in Fig\ref{fig:1}.
+			The sample improves in their resolution and quality. We can clearly see what each emoji is (human figure or objects) after a very long period of iterations.
+			
+			
+			\begin{figure*}[!ht]
+				\centering
+				\begin{subfigure}{.45\textwidth}
+					\centering
+					\includegraphics[width=.8\linewidth]{images/sample-000200.png}
+					\caption{Sample from iteration 200}
+					\label{fig:1.1}
+				\end{subfigure}
+				\begin{subfigure}{.45\textwidth}
+					\centering
+					\includegraphics[width=.8\linewidth]{images/sample-005000.png}
+					\caption{Sample from iteration 5000}
+					\label{fig:1.2}
+				\end{subfigure}
+				\caption{}
+				\label{fig:1}
+			\end{figure*}
+
+		\end{enumerate}
 		
+	\end{homeworkProblem}
+	\clearpage
+	
+	%----------------------------------------------------------------------------------
+	
+	%---------------------------------------------------------------------------------
+	%	PROBLEM 2
+	%---------------------------------------------------------------------------------
+	\begin{homeworkProblem}
+
+		\begin{enumerate}
+			\item \large{\textbf{Generator}}\\
+			
+			
+			\item \large{\textbf{CycleGAN Training Loop}}\\
+			
+			
+			\item \large{\textbf{CycleGAN Experiments}}\\
+		\end{enumerate}
+				
 	\end{homeworkProblem}
 	\clearpage
 	
