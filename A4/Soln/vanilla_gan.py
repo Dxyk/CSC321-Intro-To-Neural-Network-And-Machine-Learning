@@ -231,6 +231,7 @@ def main(opts):
     # Create checkpoint and sample directories
     utils.create_dir(opts.checkpoint_dir)
     utils.create_dir(opts.sample_dir)
+    utils.create_dir("./Report/images/{}".format(opts.sample_dir))
 
     training_loop(train_dataloader, opts)
 

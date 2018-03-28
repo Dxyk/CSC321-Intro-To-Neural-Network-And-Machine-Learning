@@ -167,13 +167,13 @@
 				\centering
 				\begin{subfigure}{.45\textwidth}
 					\centering
-					\includegraphics[width=.8\linewidth]{images/sample-000200.png}
+					\includegraphics[width=.8\linewidth]{images/samples_vanilla/sample-000200.png}
 					\caption{Sample from iteration 200}
 					\label{fig:1.1}
 				\end{subfigure}
 				\begin{subfigure}{.45\textwidth}
 					\centering
-					\includegraphics[width=.8\linewidth]{images/sample-005000.png}
+					\includegraphics[width=.8\linewidth]{images/samples_vanilla/sample-005000.png}
 					\caption{Sample from iteration 5000}
 					\label{fig:1.2}
 				\end{subfigure}
@@ -202,91 +202,92 @@
 			
 			\item \large{\textbf{CycleGAN Experiments}}
 			\begin{enumerate}
-				\item 
+				\item % 1
 				The samples without cycle-consistency loss at iteration 400 are shown in Fig\ref{fig:2}
 				
 				\begin{figure*}[!ht]
 					\centering
 					\begin{subfigure}{.45\textwidth}
 						\centering
-						\includegraphics[width=.8\linewidth]{images/sample-000400-X-Y.png}
-						\caption{Sample from iteration 200}
+						\includegraphics[width=.8\linewidth]{images/samples_cyclegan/sample-000400-X-Y.png}
+						\caption{Sample from iteration 400 X-Y}
 						\label{fig:2.1}
 					\end{subfigure}
 					\begin{subfigure}{.45\textwidth}
 						\centering
-						\includegraphics[width=.8\linewidth]{images/sample-000400-Y-X.png}
-						\caption{Sample from iteration 5000}
+						\includegraphics[width=.8\linewidth]{images/samples_cyclegan/sample-000400-Y-X.png}
+						\caption{Sample from iteration 400 Y-X}
 						\label{fig:2.2}
 					\end{subfigure}
 					\caption{}
 					\label{fig:2}
 				\end{figure*}
 				
-				\item 
+				\item % 2
 				The samples with cycle-consistency loss at iteration 400 are shown in Fig\ref{fig:3}
 				
 				\begin{figure*}[!ht]
 					\centering
 					\begin{subfigure}{.45\textwidth}
 						\centering
-						\includegraphics[width=.8\linewidth]{images/sample-000400-X-Y.png}
-						\caption{Sample from iteration 200}
+						\includegraphics[width=.8\linewidth]{images/samples_cyclegan_cycle/sample-000400-X-Y.png}
+						\caption{Sample from iteration 400 X-Y}
 						\label{fig:3.1}
 					\end{subfigure}
 					\begin{subfigure}{.45\textwidth}
 						\centering
-						\includegraphics[width=.8\linewidth]{images/sample-000400-Y-X.png}
-						\caption{Sample from iteration 5000}
+						\includegraphics[width=.8\linewidth]{images/samples_cyclegan_cycle/sample-000400-Y-X.png}
+						\caption{Sample from iteration 400 Y-X}
 						\label{fig:3.2}
 					\end{subfigure}
 					\caption{}
 					\label{fig:3}
 				\end{figure*}
 				
-				\item 
+				\item % 3
 				The samples from the pre-trained network without cycle-consistency loss are shown in Fig\ref{fig:4}
 				
 				\begin{figure*}[!ht]
 					\centering
 					\begin{subfigure}{.45\textwidth}
 						\centering
-						\includegraphics[width=.8\linewidth]{images/sample-000100-X-Y.png}
-						\caption{Sample from iteration 200}
+						\includegraphics[width=.8\linewidth]{images/samples_cyclegan_pretrained/sample-000100-X-Y.png}
+						\caption{Sample from iteration 100 X-Y}
 						\label{fig:4.1}
 					\end{subfigure}
 					\begin{subfigure}{.45\textwidth}
 						\centering
-						\includegraphics[width=.8\linewidth]{images/sample-000100-Y-X.png}
-						\caption{Sample from iteration 5000}
+						\includegraphics[width=.8\linewidth]{images/samples_cyclegan_pretrained/sample-000100-Y-X.png}
+						\caption{Sample from iteration 100 Y-X}
 						\label{fig:4.2}
 					\end{subfigure}
 					\caption{}
 					\label{fig:4}
 				\end{figure*}
 				
-				\item 
-				The samples from the pre-trained network with cycle-consistency loss are shown in Fig\ref{fig:4}
+				\item % 4
+				The samples from the pre-trained network with cycle-consistency loss are shown in Fig\ref{fig:5}
 				
 				\begin{figure*}[!ht]
 					\centering
 					\begin{subfigure}{.45\textwidth}
 						\centering
-						\includegraphics[width=.8\linewidth]{images/sample-000100-X-Y.png}
-						\caption{Sample from iteration 200}
+						\includegraphics[width=.8\linewidth]{images/samples_cyclegan_cycle_pretrained/sample-000100-X-Y.png}
+						\caption{Sample from iteration 100 X-Y}
 						\label{fig:5.1}
 					\end{subfigure}
 					\begin{subfigure}{.45\textwidth}
 						\centering
-						\includegraphics[width=.8\linewidth]{images/sample-000100-Y-X.png}
-						\caption{Sample from iteration 5000}
+						\includegraphics[width=.8\linewidth]{images/samples_cyclegan_cycle_pretrained/sample-000100-Y-X.png}
+						\caption{Sample from iteration 100 Y-X}
 						\label{fig:5.2}
 					\end{subfigure}
 					\caption{}
 					\label{fig:5}
 					\end{figure*}
 				
-				\item 
+				\item % 5
+				By observing the samples of the same iteration but different loss (with and without cycle consistency loss), it is obvious that the models using cycle consistency loss generate similar and clearer emojis. This is because by using the cycle consistency loss, we make the network account for the reconstruction loss. Then the generators will try to generate emojis with style more similar to the target. Thus the samples will get a better resemblance and become clearer. 
 			\end{enumerate}
 		\end{enumerate}
 				

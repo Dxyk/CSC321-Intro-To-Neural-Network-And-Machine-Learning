@@ -291,6 +291,7 @@ def training_loop(dataloader_X, dataloader_Y, test_dataloader_X, test_dataloader
 
         if opts.use_cycle_consistency_loss:
             reconstructed_Y = G_XtoY(fake_X)
+            # TODO: Check
             # 3. Compute the cycle consistency loss (the reconstruction loss)
             cycle_consistency_loss = F.mse_loss(reconstructed_Y, images_Y)
             g_loss += cycle_consistency_loss
