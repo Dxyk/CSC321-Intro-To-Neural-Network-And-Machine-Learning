@@ -1,7 +1,9 @@
-import collections
 import cPickle
+import collections
+
 import numpy as np
 import pylab
+
 import tsne
 
 nax = np.newaxis
@@ -11,21 +13,21 @@ TINY = 1e-30
 DEFAULT_TRAINING_CONFIG = {'batch_size': 100,  # the size of a mini-batch
                            'learning_rate': 0.1,  # the learning rate
                            'momentum': 0.9,  # the decay parameter for the momentum
-                                             # vector
+                           # vector
                            'epochs': 50,  # the maximum number of epochs to run
                            'init_wt': 0.01,  # the standard deviation of the initial
-                                             # random weights
+                           # random weights
                            'context_len': 3,  # the number of context words used
                            'show_training_CE_after': 100,  # measure training error
-                                                           # after this many
-                                                           # mini-batches
+                           # after this many
+                           # mini-batches
                            'show_validation_CE_after': 1000,  # measure validation
-                                                              # error after this many
-                                                              # mini-batches
+                           # error after this many
+                           # mini-batches
                            }
 
 
-def get_batches(inputs, targets, batch_size, shuffle = True):
+def get_batches(inputs, targets, batch_size, shuffle=True):
     """
     Divide a dataset (usually the training set) into mini-batches of a given size.
     This is a 'generator', i.e. something you can use in a for loop.
@@ -99,11 +101,11 @@ class Params(object):
         biases to 0.
         """
         word_embedding_weights = np.random.normal(0., init_wt,
-                                                  size = (vocab_size, embedding_dim))
-        embed_to_hid_weights = np.random.normal(0., init_wt, size = (
+                                                  size=(vocab_size, embedding_dim))
+        embed_to_hid_weights = np.random.normal(0., init_wt, size=(
             num_hid, context_len * embedding_dim))
         hid_to_output_weights = np.random.normal(0., init_wt,
-                                                 size = (vocab_size, num_hid))
+                                                 size=(vocab_size, num_hid))
         hid_bias = np.zeros(num_hid)
         output_bias = np.zeros(vocab_size)
         return cls(word_embedding_weights, embed_to_hid_weights,
@@ -204,7 +206,7 @@ class Model(object):
 
     def compute_loss_derivative(self, output_activations, expanded_target_batch):
         """
-        Compute the derivative of the cross-entropy loss function with respect to
+        Compute the dc_dz of the cross-entropy loss function with respect to
         the inputs to the output units. In particular, the output layer computes the
         softmax
 
@@ -225,9 +227,10 @@ class Model(object):
         """
         # =========================   YOUR CODE HERE  =========================
         # TODO
-        # dim: (expanded_target_batch.shape[0], self.vocab_size)
-        derivative = output_activations - expanded_target_batch
-        return derivative
+        # dc/dz = y - t  // dc/dz (B * N_v); y (B, N_v); t (B, N_v)
+        # See https://deepnotes.io/softmax-crossentropy for detailed calculations
+        dc_dz = output_activations - expanded_target_batch
+        return dc_dz
         # =====================================================================
 
     def compute_loss(self, output_activations, expanded_target_batch):
@@ -254,21 +257,18 @@ class Model(object):
         # Look up the input word indies in the word_embedding_weights matrix
         embedding_layer_state = np.zeros((batch_size, self.embedding_layer_dim))
         for i in range(self.context_len):
-            embedding_layer_state[:,
-            i * self.embedding_dim:(i + 1) * self.embedding_dim] = \
+            embedding_layer_state[:, i * self.embedding_dim: (i + 1) * self.embedding_dim] = \
                 self.params.word_embedding_weights[inputs[:, i], :]
 
         # Hidden layer
         inputs_to_hid = np.dot(embedding_layer_state,
-                               self.params.embed_to_hid_weights.T) + \
-                        self.params.hid_bias
+                               self.params.embed_to_hid_weights.T) + self.params.hid_bias
         # Apply logistic activation function
         hidden_layer_state = 1. / (1. + np.exp(-inputs_to_hid))
 
         # Output layer
-        inputs_to_softmax = np.dot(hidden_layer_state,
-                                   self.params.hid_to_output_weights.T) + \
-                            self.params.output_bias
+        inputs_to_softmax = np.dot(hidden_layer_state, self.params.hid_to_output_weights.T) \
+                            + self.params.output_bias
 
         # Subtract maximum.
         # Remember that adding or subtracting the same constant from each input to a
@@ -302,17 +302,20 @@ class Model(object):
         # The matrix with values dC / dz_j, where dz_j is the input to the jth
         # hidden unit, i.e. y_j = 1 / (1 + e^{-z_j})
         hid_deriv = np.dot(loss_derivative, self.params.hid_to_output_weights) \
-            * activations.hidden_layer * (1. - activations.hidden_layer)
+                    * activations.hidden_layer * (1. - activations.hidden_layer)
 
-        # =========================   YOUR CODE HERE  =========================
-        # TODO
-        hid_to_output_weights_grad = np.matmul(loss_derivative.T,
-                                               activations.hidden_layer)
-        output_bias_grad = np.sum(loss_derivative, axis=0)
-        embed_to_hid_weights_grad = np.matmul(hid_deriv.T,
-                                              activations.embedding_layer)
+        # =========================  YOUR CODE HERE  =========================
+        # W_h = H_bar.T * X  // W_h (N_h * 3D); H_bar (B * N_h); X (B * 3D)
+        embed_to_hid_weights_grad = np.matmul(hid_deriv.T, activations.embedding_layer)
+
+        # B_h = \Sum{H_bar}  // B_h (N_h); H_bar (B * N_h)
         hid_bias_grad = np.sum(hid_deriv, axis=0)
 
+        # W_o = Z_bar.T * H  // W_o (N_v * N_h); Z_bar (B * N_v); H (B * N_h)
+        hid_to_output_weights_grad = np.matmul(loss_derivative.T, activations.hidden_layer)
+
+        # B_o = \Sum{Z_bar}  // B_o (N_v); Z_bar (B * N_v)
+        output_bias_grad = np.sum(loss_derivative, axis=0)
         # ======================================================================
 
         # The matrix of derivatives for the embedding layer
@@ -329,7 +332,7 @@ class Model(object):
                       hid_to_output_weights_grad,
                       hid_bias_grad, output_bias_grad)
 
-    def evaluate(self, inputs, targets, batch_size = 100):
+    def evaluate(self, inputs, targets, batch_size=100):
         """
         Compute the average cross-entropy over a dataset.
 
@@ -350,7 +353,7 @@ class Model(object):
         return total / float(ndata)
 
     # noinspection PyTypeChecker
-    def display_nearest_words(self, word, k = 10):
+    def display_nearest_words(self, word, k=10):
         """
         List the k words nearest to a given word, along with their distances.
         """
@@ -363,7 +366,7 @@ class Model(object):
         idx = self.vocab.index(word)
         word_rep = self.params.word_embedding_weights[idx, :]
         diff = self.params.word_embedding_weights - word_rep.reshape((1, -1))
-        distance = np.sqrt(np.sum(diff ** 2, axis = 1))
+        distance = np.sqrt(np.sum(diff ** 2, axis=1))
 
         # Sort by distance.
         order = np.argsort(distance)
@@ -373,7 +376,7 @@ class Model(object):
             print '{}: {}'.format(self.vocab[i], distance[i])
 
     # noinspection PyTypeChecker
-    def predict_next_word(self, word1, word2, word3, k = 10):
+    def predict_next_word(self, word1, word2, word3, k=10):
         """
         List the top k predictions for the next word along with their probabilities.
         Inputs:
@@ -473,7 +476,7 @@ def find_occurrences(word1, word2, word3):
         for m in np.where(matches)[0]:
             counts[_vocab[_train_targets[m]]] += 1
 
-        word_counts = sorted(counts.items(), key = lambda t: t[1], reverse = True)
+        word_counts = sorted(counts.items(), key=lambda t: t[1], reverse=True)
         print 'The tri-gram "{} {} {}" was followed by the following words in the training set:'.format(
             word1, word2, word3)
         for word, count in word_counts:
@@ -486,7 +489,7 @@ def find_occurrences(word1, word2, word3):
             word1, word2, word3)
 
 
-def train(embedding_dim, num_hid, config = DEFAULT_TRAINING_CONFIG):
+def train(embedding_dim, num_hid, config=DEFAULT_TRAINING_CONFIG):
     """
     This is the main training routine for the language model. It takes two
     parameters:

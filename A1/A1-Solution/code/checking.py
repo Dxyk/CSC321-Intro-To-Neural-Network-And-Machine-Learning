@@ -14,10 +14,10 @@ def relative_error(a, b):
 
 
 def check_output_derivatives(model, input_batch, target_batch):
-    def softmax(z):
-        z = z.copy()
-        z -= z.max(1).reshape((-1, 1))
-        y = np.exp(z)
+    def softmax(z_prev):
+        z_prev = z_prev.copy()
+        z_prev -= z_prev.max(1).reshape((-1, 1))
+        y = np.exp(z_prev)
         y /= y.sum(1).reshape((-1, 1))
         return y
 
@@ -128,7 +128,7 @@ def check_gradients():
     np.seterr(all='ignore')   # suppress a warning which is harmless
 
     model = load_partially_trained_model()
-    data_obj = cPickle.load(open('data.pk', 'rb'))
+    data_obj = cPickle.load(open('./data.pk', 'rb'))
     train_inputs, train_targets = data_obj['train_inputs'], data_obj['train_targets']
     input_batch = train_inputs[:100, :]
     target_batch = train_targets[:100]
@@ -240,6 +240,6 @@ def report():
 
 
 if __name__ == "__main__":
-    # check_gradients()
+    check_gradients()
     # print_gradients()
-    report()
+    # report()
