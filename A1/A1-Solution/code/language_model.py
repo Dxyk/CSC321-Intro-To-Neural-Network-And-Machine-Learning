@@ -8,23 +8,33 @@ import tsne
 
 nax = np.newaxis
 
+# =============== Constants ===============
+DATA_FILE_NAME = 'data.pk'
 TINY = 1e-30
 
-DEFAULT_TRAINING_CONFIG = {'batch_size': 100,  # the size of a mini-batch
-                           'learning_rate': 0.1,  # the learning rate
-                           'momentum': 0.9,  # the decay parameter for the momentum
-                           # vector
-                           'epochs': 50,  # the maximum number of epochs to run
-                           'init_wt': 0.01,  # the standard deviation of the initial
-                           # random weights
-                           'context_len': 3,  # the number of context words used
-                           'show_training_CE_after': 100,  # measure training error
-                           # after this many
-                           # mini-batches
-                           'show_validation_CE_after': 1000,  # measure validation
-                           # error after this many
-                           # mini-batches
-                           }
+VOCAB = 'vocab'
+TRAIN_INPUTS, TRAIN_TARGETS = 'train_inputs', 'train_targets'
+VALID_INPUTS, VALID_TARGETS = 'valid_inputs', 'valid_targets'
+TEST_INPUTS, TEST_TARGETS = 'test_inputs', 'test_targets'
+BATCH_SIZE = 'batch_size'
+LEARNING_RATE = 'learning_rate'
+MOMENTUM = 'momentum'
+EPOCHS = 'epochs'
+INIT_WT_SD = 'init_wt'
+CONTEXT_LEN = 'context_len'
+TRAINING_REPORT_CYCLE = 'show_training_CE_after'
+SHOW_VALIDATION_CE_AFTER = 'show_validation_CE_after'
+
+DEFAULT_TRAINING_CONFIG = {
+    BATCH_SIZE: 100,  # the size of a mini-batch
+    LEARNING_RATE: 0.1,  # the learning rate
+    MOMENTUM: 0.9,  # the decay parameter for the momentum vector
+    EPOCHS: 50,  # the maximum number of epochs to run
+    INIT_WT_SD: 0.01,  # the standard deviation of the initial random weights
+    CONTEXT_LEN: 3,  # the number of context words used
+    TRAINING_REPORT_CYCLE: 100,  # measure training error after this many mini-batches
+    SHOW_VALIDATION_CE_AFTER: 1000,  # measure validation error after this many mini-batches
+}
 
 
 def get_batches(inputs, targets, batch_size, shuffle=True):
@@ -91,8 +101,7 @@ class Params(object):
         hid_bias = np.zeros(num_hid)
         output_bias = np.zeros(vocab_size)
         return cls(word_embedding_weights, embed_to_hid_weights,
-                   hid_to_output_weights,
-                   hid_bias, output_bias)
+                   hid_to_output_weights, hid_bias, output_bias)
 
     @classmethod
     def random_init(cls, init_wt, vocab_size, context_len, embedding_dim, num_hid):
@@ -100,17 +109,14 @@ class Params(object):
         A constructor which initializes weights to small random values and
         biases to 0.
         """
-        word_embedding_weights = np.random.normal(0., init_wt,
-                                                  size=(vocab_size, embedding_dim))
-        embed_to_hid_weights = np.random.normal(0., init_wt, size=(
-            num_hid, context_len * embedding_dim))
-        hid_to_output_weights = np.random.normal(0., init_wt,
-                                                 size=(vocab_size, num_hid))
+        word_embedding_weights = np.random.normal(0., init_wt, size=(vocab_size, embedding_dim))
+        embed_to_hid_weights = np.random.normal(0., init_wt,
+                                                size=(num_hid, context_len * embedding_dim))
+        hid_to_output_weights = np.random.normal(0., init_wt, size=(vocab_size, num_hid))
         hid_bias = np.zeros(num_hid)
         output_bias = np.zeros(vocab_size)
         return cls(word_embedding_weights, embed_to_hid_weights,
-                   hid_to_output_weights,
-                   hid_bias, output_bias)
+                   hid_to_output_weights, hid_bias, output_bias)
 
     # ===== The functions below are Python's somewhat oddball way of overloading
     # ===== operators, so that we can do arithmetic on Params instances.
@@ -190,8 +196,7 @@ class Model(object):
         Constructor which randomly initializes the weights to Gaussians with standard
         deviation init_wt and initializes the biases to all zeros.
         """
-        params = Params.random_init(init_wt, len(vocab), context_len, embedding_dim,
-                                    num_hid)
+        params = Params.random_init(init_wt, len(vocab), context_len, embedding_dim, num_hid)
         return Model(params, vocab)
 
     def indicator_matrix(self, targets):
@@ -204,7 +209,8 @@ class Model(object):
         expanded_targets[np.arange(batch_size), targets] = 1.
         return expanded_targets
 
-    def compute_loss_derivative(self, output_activations, expanded_target_batch):
+    @staticmethod
+    def compute_loss_derivative(output_activations, expanded_target_batch):
         """
         Compute the dc_dz of the cross-entropy loss function with respect to
         the inputs to the output units. In particular, the output layer computes the
@@ -226,14 +232,14 @@ class Model(object):
                                     is j, and 0 otherwise.
         """
         # =========================   YOUR CODE HERE  =========================
-        # TODO
         # dc/dz = y - t  // dc/dz (B * N_v); y (B, N_v); t (B, N_v)
         # See https://deepnotes.io/softmax-crossentropy for detailed calculations
         dc_dz = output_activations - expanded_target_batch
         return dc_dz
         # =====================================================================
 
-    def compute_loss(self, output_activations, expanded_target_batch):
+    @staticmethod
+    def compute_loss(output_activations, expanded_target_batch):
         """
         Compute the total loss over a mini-batch. expanded_target_batch is the matrix
         obtained by calling indicator_matrix on the targets for the batch.
@@ -246,7 +252,6 @@ class Model(object):
         instance. You should try to read and understand this function, since this
         will give you clues for how to implement back_propagate.
         """
-
         batch_size = inputs.shape[0]
         if inputs.shape[1] != self.context_len:
             raise RuntimeError(
@@ -260,13 +265,14 @@ class Model(object):
             embedding_layer_state[:, i * self.embedding_dim: (i + 1) * self.embedding_dim] = \
                 self.params.word_embedding_weights[inputs[:, i], :]
 
-        # Hidden layer
-        inputs_to_hid = np.dot(embedding_layer_state,
-                               self.params.embed_to_hid_weights.T) + self.params.hid_bias
-        # Apply logistic activation function
+        # Hidden layer // X * W_h^T + B_h
+        inputs_to_hid = np.dot(embedding_layer_state, self.params.embed_to_hid_weights.T) \
+                        + self.params.hid_bias
+
+        # Apply logistic activation function // \sigmoid{H}
         hidden_layer_state = 1. / (1. + np.exp(-inputs_to_hid))
 
-        # Output layer
+        # Output layer // Z * W_o^T + B_o
         inputs_to_softmax = np.dot(hidden_layer_state, self.params.hid_to_output_weights.T) \
                             + self.params.output_bias
 
@@ -276,11 +282,11 @@ class Model(object):
         # all inputs <= 0. This prevents overflows when computing their exponents.
         inputs_to_softmax -= inputs_to_softmax.max(1).reshape((-1, 1))
 
+        # Compute softmax
         output_layer_state = np.exp(inputs_to_softmax)
         output_layer_state /= output_layer_state.sum(1).reshape((-1, 1))
 
-        return Activations(embedding_layer_state, hidden_layer_state,
-                           output_layer_state)
+        return Activations(embedding_layer_state, hidden_layer_state, output_layer_state)
 
     def back_propagate(self, input_batch, activations, loss_derivative):
         """
@@ -324,13 +330,13 @@ class Model(object):
         # Embedding layer
         word_embedding_weights_grad = np.zeros((self.vocab_size, self.embedding_dim))
         for w in range(self.context_len):
-            word_embedding_weights_grad += np.dot(
-                self.indicator_matrix(input_batch[:, w]).T,
-                embed_deriv[:, w * self.embedding_dim:(w + 1) * self.embedding_dim])
+            curr_indicator_matrix = self.indicator_matrix(input_batch[:, w])
+            curr_embedded_deriv = embed_deriv[:,
+                                  w * self.embedding_dim:(w + 1) * self.embedding_dim]
+            word_embedding_weights_grad += np.dot(curr_indicator_matrix.T, curr_embedded_deriv)
 
         return Params(word_embedding_weights_grad, embed_to_hid_weights_grad,
-                      hid_to_output_weights_grad,
-                      hid_bias_grad, output_bias_grad)
+                      hid_to_output_weights_grad, hid_bias_grad, output_bias_grad)
 
     def evaluate(self, inputs, targets, batch_size=100):
         """
@@ -339,8 +345,7 @@ class Model(object):
         inputs: matrix of shape D x N
         targets: one-dimensional matrix of length N
         """
-
-        ndata = inputs.shape[0]
+        num_data = inputs.shape[0]
 
         total = 0.
         for input_batch, target_batch in get_batches(inputs, targets, batch_size):
@@ -350,14 +355,13 @@ class Model(object):
                 expanded_target_batch * np.log(activations.output_layer + TINY))
             total += cross_entropy
 
-        return total / float(ndata)
+        return total / float(num_data)
 
     # noinspection PyTypeChecker
     def display_nearest_words(self, word, k=10):
         """
         List the k words nearest to a given word, along with their distances.
         """
-
         if word not in self.vocab:
             print 'Word "{}" not in vocabulary.'.format(word)
             return
@@ -370,8 +374,7 @@ class Model(object):
 
         # Sort by distance.
         order = np.argsort(distance)
-        order = order[
-                1:1 + k]  # The nearest word is the query word itself, skip that.
+        order = order[1:1 + k]  # The nearest word is the query word itself, skip that.
         for i in order:
             print '{}: {}'.format(self.vocab[i], distance[i])
 
@@ -396,22 +399,19 @@ class Model(object):
         if word3 not in self.vocab:
             raise RuntimeError('Word "{}" not in vocabulary.'.format(word3))
 
-        idx1, idx2, idx3 = self.vocab.index(word1), self.vocab.index(
-            word2), self.vocab.index(word3)
-        input = np.array([idx1, idx2, idx3]).reshape((1, -1))
-        activations = self.compute_activations(input)
+        idx1, idx2, idx3 = self.vocab.index(word1), self.vocab.index(word2), self.vocab.index(word3)
+        input_x = np.array([idx1, idx2, idx3]).reshape((1, -1))
+        activations = self.compute_activations(input_x)
         prob = activations.output_layer.ravel()
         idxs = np.argsort(prob)[::-1]  # sort descending
         for i in idxs[:k]:
-            print '{} {} {} {} Prob: {:1.5f}'.format(word1, word2, word3,
-                                                     self.vocab[i], prob[i])
+            print '{} {} {} {} Prob: {:1.5f}'.format(word1, word2, word3, self.vocab[i], prob[i])
 
     # noinspection PyTypeChecker
     def word_distance(self, word1, word2):
         """
         Compute the distance between the vector representations of two words.
         """
-
         if word1 not in self.vocab:
             raise RuntimeError('Word "{}" not in vocabulary.'.format(word1))
         if word2 not in self.vocab:
@@ -427,13 +427,12 @@ class Model(object):
         """
         Plot a 2-D visualization of the learned representations using t-SNE.
         """
-
-        mapped_X = tsne.tsne(self.params.word_embedding_weights)
+        mapped_x = tsne.tsne(self.params.word_embedding_weights)
         pylab.figure()
         for i, w in enumerate(self.vocab):
-            pylab.text(mapped_X[i, 0], mapped_X[i, 1], w)
-        pylab.xlim(mapped_X[:, 0].min(), mapped_X[:, 0].max())
-        pylab.ylim(mapped_X[:, 1].min(), mapped_X[:, 1].max())
+            pylab.text(mapped_x[i, 0], mapped_x[i, 1], w)
+        pylab.xlim(mapped_x[:, 0].min(), mapped_x[:, 0].max())
+        pylab.ylim(mapped_x[:, 1].min(), mapped_x[:, 1].max())
         # TODO: change back to show
         # pylab.show()
         pylab.savefig('../a1-writeup/Images/1.png')
@@ -454,10 +453,9 @@ def find_occurrences(word1, word2, word3):
     # cache the data so we don't keep reloading
     global _train_inputs, _train_targets, _vocab
     if _train_inputs is None:
-        data_obj = cPickle.load(open('data.pk', 'rb'))
-        _vocab = data_obj['vocab']
-        _train_inputs, _train_targets = data_obj['train_inputs'], data_obj[
-            'train_targets']
+        data_obj = cPickle.load(open(DATA_FILE_NAME, 'rb'))
+        _vocab = data_obj[VOCAB]
+        _train_inputs, _train_targets = data_obj[TRAIN_INPUTS], data_obj[TRAIN_TARGETS]
 
     if word1 not in _vocab:
         raise RuntimeError('Word "{}" not in vocabulary.'.format(word1))
@@ -477,18 +475,19 @@ def find_occurrences(word1, word2, word3):
             counts[_vocab[_train_targets[m]]] += 1
 
         word_counts = sorted(counts.items(), key=lambda t: t[1], reverse=True)
-        print 'The tri-gram "{} {} {}" was followed by the following words in the training set:'.format(
-            word1, word2, word3)
+        print 'The tri-gram "{} {} {}" was followed by the following words' \
+              ' in the training set:'.format(word1, word2, word3)
         for word, count in word_counts:
             if count > 1:
-                print '    {} ({} times)'.format(word, count)
+                print '\t{} ({} times)'.format(word, count)
             else:
-                print '    {} (1 time)'.format(word)
+                print '\t{} (1 time)'.format(word)
     else:
-        print 'The tri-gram "{} {} {}" did not occur in the training set.'.format(
-            word1, word2, word3)
+        print 'The tri-gram "{} {} {}" did not occur in the training set.'.format(word1, word2,
+                                                                                  word3)
 
 
+# noinspection PyDefaultArgument
 def train(embedding_dim, num_hid, config=DEFAULT_TRAINING_CONFIG):
     """
     This is the main training routine for the language model. It takes two
@@ -497,37 +496,42 @@ def train(embedding_dim, num_hid, config=DEFAULT_TRAINING_CONFIG):
         embedding_dim, the dimension of the embedding space
         num_hid, the number of hidden units.
     """
-
     # Load the data
-    data_obj = cPickle.load(open('data.pk', 'rb'))
-    vocab = data_obj['vocab']
-    train_inputs, train_targets = data_obj['train_inputs'], data_obj['train_targets']
-    valid_inputs, valid_targets = data_obj['valid_inputs'], data_obj['valid_targets']
-    test_inputs, test_targets = data_obj['test_inputs'], data_obj['test_targets']
+    data_obj = cPickle.load(open(DATA_FILE_NAME, 'rb'))
+    vocab = data_obj[VOCAB]
+    train_inputs, train_targets = data_obj[TRAIN_INPUTS], data_obj[TRAIN_TARGETS]
+    valid_inputs, valid_targets = data_obj[VALID_INPUTS], data_obj[VALID_TARGETS]
+    test_inputs, test_targets = data_obj[TEST_INPUTS], data_obj[TEST_TARGETS]
+
+    # parameters
+    init_weight_stddev = config[INIT_WT_SD]
+    context_length = config[CONTEXT_LEN]
+    batch_size = config[BATCH_SIZE]
+    epochs = config[EPOCHS]
+    training_report_cycle = config[TRAINING_REPORT_CYCLE]
+    momentum_lambda = config[MOMENTUM]
+    learning_rate_alpha = config[LEARNING_RATE]
 
     # Randomly initialize the trainable parameters
-    model = Model.random_init(config['init_wt'], vocab, config['context_len'],
-                              embedding_dim, num_hid)
+    model = Model.random_init(init_weight_stddev, vocab, context_length, embedding_dim, num_hid)
 
     # Variables used for early stopping
-    best_valid_CE = np.infty
+    best_valid_ce = np.infty
     end_training = False
 
     # Initialize the momentum vector to all zeros
-    delta = Params.zeros(len(vocab), config['context_len'], embedding_dim, num_hid)
+    delta = Params.zeros(len(vocab), context_length, embedding_dim, num_hid)
 
-    this_chunk_CE = 0.
+    temp_reporting_ce = 0.
     batch_count = 0
-    for epoch in range(1, config['epochs'] + 1):
+    for epoch in range(1, epochs + 1):
         if end_training:
             break
 
-        print
-        print 'Epoch', epoch
+        print '\nEpoch', epoch
 
         for m, (input_batch, target_batch) in enumerate(
-                get_batches(train_inputs, train_targets,
-                            config['batch_size'])):
+                get_batches(train_inputs, train_targets, batch_size)):
             batch_count += 1
 
             # Forward propagate
@@ -537,45 +541,42 @@ def train(embedding_dim, num_hid, config=DEFAULT_TRAINING_CONFIG):
             expanded_target_batch = model.indicator_matrix(target_batch)
             loss_derivative = model.compute_loss_derivative(activations.output_layer,
                                                             expanded_target_batch)
-            loss_derivative /= config['batch_size']
+            loss_derivative /= batch_size
 
             # Measure loss function
-            cross_entropy = model.compute_loss(activations.output_layer,
-                                               expanded_target_batch) / config[
-                                'batch_size']
-            this_chunk_CE += cross_entropy
-            if batch_count % config['show_training_CE_after'] == 0:
-                print 'Batch {} Train CE {:1.3f}'.format(
-                    batch_count, this_chunk_CE / config['show_training_CE_after'])
-                this_chunk_CE = 0.
+            cross_entropy = model.compute_loss(activations.output_layer, expanded_target_batch) \
+                            / batch_size
+            temp_reporting_ce += cross_entropy
+            if batch_count % training_report_cycle == 0:
+                print 'Batch {} Train CE {:1.3f}'.format(batch_count, temp_reporting_ce
+                                                         / training_report_cycle)
+                temp_reporting_ce = 0.
 
             # Backpropagate
-            loss_gradient = model.back_propagate(input_batch, activations,
-                                                 loss_derivative)
+            loss_gradient = model.back_propagate(input_batch, activations, loss_derivative)
 
             # Update the momentum vector and model parameters
-            delta = config['momentum'] * delta + loss_gradient
-            model.params -= config['learning_rate'] * delta
+            delta = momentum_lambda * delta + loss_gradient
+            model.params -= learning_rate_alpha * delta
 
             # Validate
-            if batch_count % config['show_validation_CE_after'] == 0:
+            if batch_count % config[SHOW_VALIDATION_CE_AFTER] == 0:
                 print 'Running validation...'
                 cross_entropy = model.evaluate(valid_inputs, valid_targets)
                 print 'Validation cross-entropy: {:1.3f}'.format(cross_entropy)
 
-                if cross_entropy > best_valid_CE:
+                if cross_entropy > best_valid_ce:
                     print 'Validation error increasing!  Training stopped.'
                     end_training = True
                     break
 
-                best_valid_CE = cross_entropy
+                best_valid_ce = cross_entropy
 
-    print
-    train_CE = model.evaluate(train_inputs, train_targets)
-    print 'Final training cross-entropy: {:1.3f}'.format(train_CE)
-    valid_CE = model.evaluate(valid_inputs, valid_targets)
-    print 'Final validation cross-entropy: {:1.3f}'.format(valid_CE)
-    test_CE = model.evaluate(test_inputs, test_targets)
-    print 'Final test cross-entropy: {:1.3f}'.format(test_CE)
+    train_ce = model.evaluate(train_inputs, train_targets)
+    print '\nFinal training cross-entropy: {:1.3f}'.format(train_ce)
+    valid_ce = model.evaluate(valid_inputs, valid_targets)
+    print 'Final validation cross-entropy: {:1.3f}'.format(valid_ce)
+    test_ce = model.evaluate(test_inputs, test_targets)
+    print 'Final test cross-entropy: {:1.3f}'.format(test_ce)
 
     return model

@@ -1,12 +1,23 @@
 import cPickle
+
 import numpy as np
 
 import language_model
 
-
+# =============== Constants ===============
+DATA_FILE_NAME = language_model.DATA_FILE_NAME
 PARTIALLY_TRAINED_MODEL = 'partially_trained.pk'
-
 EPS = 1e-4
+
+VOCAB = language_model.VOCAB
+TRAIN_INPUTS, TRAIN_TARGETS = language_model.TRAIN_INPUTS, language_model.TRAIN_TARGETS
+VALID_INPUTS, VALID_TARGETS = language_model.VALID_INPUTS, language_model.VALID_TARGETS
+TEST_INPUTS, TEST_TARGETS = language_model.TEST_INPUTS, language_model.TEST_TARGETS
+WORD_EMBEDDING_WEIGHTS = 'word_embedding_weights'
+EMBED_TO_HID_WEIGHTS = 'embed_to_hid_weights'
+HID_TO_OUTPUT_WEIGHTS = 'hid_to_output_weights'
+HID_BIAS = 'hid_bias'
+OUTPUT_BIAS = 'output_bias'
 
 
 def relative_error(a, b):
@@ -110,12 +121,12 @@ def check_param_gradient(model, param_name, input_batch, target_batch):
 
 def load_partially_trained_model():
     obj = cPickle.load(open(PARTIALLY_TRAINED_MODEL, 'rb'))
-    params = language_model.Params(obj['word_embedding_weights'],
-                                   obj['embed_to_hid_weights'],
-                                   obj['hid_to_output_weights'],
-                                   obj['hid_bias'],
-                                   obj['output_bias'])
-    vocab = obj['vocab']
+    params = language_model.Params(obj[WORD_EMBEDDING_WEIGHTS],
+                                   obj[EMBED_TO_HID_WEIGHTS],
+                                   obj[HID_TO_OUTPUT_WEIGHTS],
+                                   obj[HID_BIAS],
+                                   obj[OUTPUT_BIAS])
+    vocab = obj[VOCAB]
     return language_model.Model(params, vocab)
 
 
@@ -125,19 +136,19 @@ def check_gradients():
     """
     np.random.seed(0)
 
-    np.seterr(all='ignore')   # suppress a warning which is harmless
+    np.seterr(all='ignore')  # suppress a warning which is harmless
 
     model = load_partially_trained_model()
     data_obj = cPickle.load(open('./data.pk', 'rb'))
-    train_inputs, train_targets = data_obj['train_inputs'], data_obj['train_targets']
+    train_inputs, train_targets = data_obj[TRAIN_INPUTS], data_obj[TRAIN_TARGETS]
     input_batch = train_inputs[:100, :]
     target_batch = train_targets[:100]
 
     if not check_output_derivatives(model, input_batch, target_batch):
         return
 
-    for param_name in ['word_embedding_weights', 'embed_to_hid_weights',
-                       'hid_to_output_weights', 'hid_bias', 'output_bias']:
+    for param_name in [WORD_EMBEDDING_WEIGHTS, EMBED_TO_HID_WEIGHTS,
+                       HID_TO_OUTPUT_WEIGHTS, HID_BIAS, OUTPUT_BIAS]:
         check_param_gradient(model, param_name, input_batch, target_batch)
 
 
@@ -147,8 +158,8 @@ def print_gradients():
     """
 
     model = load_partially_trained_model()
-    data_obj = cPickle.load(open('data.pk', 'rb'))
-    train_inputs, train_targets = data_obj['train_inputs'], data_obj['train_targets']
+    data_obj = cPickle.load(open(DATA_FILE_NAME, 'rb'))
+    train_inputs, train_targets = data_obj[TRAIN_INPUTS], data_obj[TRAIN_TARGETS]
     input_batch = train_inputs[:100, :]
     target_batch = train_targets[:100]
 
@@ -215,31 +226,33 @@ def report():
     model = language_model.train(16, 128)
 
     # 1
-    print "========== PART 1 =========="
-    samples = ['government of united', 'city of new', 'life in the', 'he is the', 'it was president']
+    print "\n========== PART 1 =========="
+    samples = ['government of united', 'city of new', 'life in the', 'he is the',
+               'it was president']
     for sample in samples:
-        print "\nPredicting {}:".format(sample)
-        word1, word2, word3 = sample.split()[0:3]
+        print "Predicting {}:".format(sample)
+        word1, word2, word3 = sample.split()[:3]
 
         language_model.find_occurrences(word1, word2, word3)
         model.predict_next_word(word1, word2, word3)
+        print "\n"
 
     # 2
-    print "========== PART 2 =========="
+    print "\n========== PART 2 =========="
     model.tsne_plot()
 
     # 3
-    print "========== PART 3 =========="
+    print "\n========== PART 3 =========="
     print model.word_distance('our', 'his')
     print model.word_distance('new', 'york')
 
     # 4
-    print "========== PART 4 =========="
+    print "\n========== PART 4 =========="
     print model.word_distance('government', 'university')
     print model.word_distance('government', 'political')
 
 
 if __name__ == "__main__":
     check_gradients()
-    # print_gradients()
-    # report()
+    print_gradients()
+    report()
