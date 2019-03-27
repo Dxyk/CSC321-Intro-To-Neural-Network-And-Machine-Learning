@@ -190,23 +190,34 @@ class MyDilatedConv2d(MyConv2d):
     """
 
     def __init__(self, in_channels, out_channels, kernel_size, dilation=1):
-        super(MyDilatedConv2d, self).__init__(in_channels,
-                                              out_channels,
-                                              kernel_size)
+        super(MyDilatedConv2d, self).__init__(in_channels, out_channels, kernel_size)
         self.dilation = dilation
 
     def forward(self, input):
         # =============== YOUR CODE GOES HERE ===============
-        pass
+        paddings = [self.dilation, self.dilation, self.dilation, self.dilation]
+        dilated_weight = torch.nn.functional.pad(self.weight, paddings, "replicate")
+
+        # zero the padded entries
+        for i in range(self.kernel_size - 1):
+            j = (self.dilation + 1) * i + 1
+            dilated_weight.data[:, :, j:j + self.dilation, :] = 0
+            dilated_weight.data[:, :, :, j:j + self.dilation] = 0
+
+        # update kernel size such that C_out is equal to C_in
+        receptive_field_size = self.kernel_size * (self.dilation + 1) - self.dilation
+        padding = receptive_field_size // 2
+
+        return F.conv2d(input, dilated_weight, self.bias, padding=padding)
         # ===================================================
 
 
 class CNN(nn.Module):
     def __init__(self, kernel, num_filters, num_colours):
+        # first call parent's initialization function
         super(CNN, self).__init__()
-        padding = kernel // 2
 
-        # TODO
+        padding = kernel // 2
 
         # =============== YOUR CODE GOES HERE ===============
         self.downconv1 = nn.Sequential(
@@ -216,21 +227,18 @@ class CNN(nn.Module):
             nn.ReLU())
 
         self.downconv2 = nn.Sequential(
-            MyConv2d(num_filters, num_filters * 2, kernel_size=kernel,
-                     padding=padding),
+            MyConv2d(num_filters, num_filters * 2, kernel_size=kernel, padding=padding),
             nn.MaxPool2d(2),
             nn.BatchNorm2d(num_filters * 2),
             nn.ReLU())
 
         self.rfconv = nn.Sequential(
-            MyConv2d(num_filters * 2, num_filters * 2, kernel_size=kernel,
-                     padding=padding),
+            MyConv2d(num_filters * 2, num_filters * 2, kernel_size=kernel, padding=padding),
             nn.BatchNorm2d(num_filters * 2),
             nn.ReLU())
 
         self.upconv1 = nn.Sequential(
-            MyConv2d(num_filters * 2, num_filters, kernel_size=kernel,
-                     padding=padding),
+            MyConv2d(num_filters * 2, num_filters, kernel_size=kernel, padding=padding),
             nn.Upsample(scale_factor=2),
             nn.BatchNorm2d(num_filters),
             nn.ReLU())
@@ -271,102 +279,64 @@ class UNet(nn.Module):
         padding = kernel // 2
 
         # =============== YOUR CODE GOES HERE ===============
-        # x
-
         self.downconv1 = nn.Sequential(
             MyConv2d(1, num_filters, kernel_size=kernel, padding=padding),
-            nn.MaxPool2d(2),  # [, , /2, /2]
+            nn.MaxPool2d(2),
             nn.BatchNorm2d(num_filters),
             nn.ReLU())
-        # out1
 
         self.downconv2 = nn.Sequential(
-            MyConv2d(num_filters, num_filters * 2, kernel_size=kernel,
-                     padding=padding),
+            MyConv2d(num_filters, num_filters * 2, kernel_size=kernel, padding=padding),
             nn.MaxPool2d(2),
             nn.BatchNorm2d(num_filters * 2),
             nn.ReLU())
-        # out2
 
         self.rfconv = nn.Sequential(
-            MyConv2d(num_filters * 2, num_filters * 2, kernel_size=kernel,
-                     padding=padding),
+            MyConv2d(num_filters * 2, num_filters * 2, kernel_size=kernel, padding=padding),
             nn.BatchNorm2d(num_filters * 2),
             nn.ReLU())
-        # out3
 
         self.upconv1 = nn.Sequential(
-            MyConv2d(4 * num_filters, num_filters, kernel_size=kernel,
-                     padding=padding),
+            MyConv2d(num_filters * 2 * 2, num_filters, kernel_size=kernel, padding=padding),
             nn.Upsample(scale_factor=2),
             nn.BatchNorm2d(num_filters),
             nn.ReLU())
-        # out4
 
         self.upconv2 = nn.Sequential(
-            MyConv2d(2 * num_filters, num_colours, kernel_size=kernel, padding=padding),
+            MyConv2d(num_filters * 2, num_colours, kernel_size=kernel, padding=padding),
             nn.Upsample(scale_factor=2),
             nn.BatchNorm2d(num_colours),
             nn.ReLU())
-        # out5
 
         self.finalconv = MyConv2d(num_colours + 1, num_colours, kernel_size=kernel)
-        # out_final
-        # =============================================
 
     def forward(self, x):
         # =============== YOUR CODE GOES HERE ===============
-        # For testing
-        print_res = False
-        # TODO: could not get cuda running?
+        out1 = self.downconv1(x)
 
-        if print_res:
-            print("X: {}".format(x.shape))
-            self.out1 = self.downconv1(x)
-            print("out 1: {}".format(self.out1.shape))
-            self.out2 = self.downconv2(self.out1)
-            print("out 2: {}".format(self.out2.shape))
-            self.out3 = self.rfconv(self.out2)
-            self.out3 = torch.cat((self.out2, self.out3), 1)
-            print("out 3: {}".format(self.out3.shape))
+        out2 = self.downconv2(out1)
 
-            self.out4 = self.upconv1(self.out3)
-            self.out4 = torch.cat((self.out1, self.out4), 1)
-            print("out 4: {}".format(self.out4.shape))
+        out3 = self.rfconv(out2)
 
-            self.out5 = self.upconv2(self.out4)
-            self.out5 = torch.cat((x, self.out5), 1)
-            print("out 5: {}".format(self.out5.shape))
+        cat_out3_out2 = torch.cat((out3, out2), 1)
+        out4 = self.upconv1(cat_out3_out2)
 
-            self.out_final = self.finalconv(self.out5)
-            print("out final: {}".format(self.out_final.shape))
+        cat_out4_out1 = torch.cat((out4, out1), 1)
+        out5 = self.upconv2(cat_out4_out1)
 
-        else:
-            self.out1 = self.downconv1(x)
-            self.out2 = self.downconv2(self.out1)
+        cat_out5_x = torch.cat((out5, x), 1)
+        out_final = self.finalconv(cat_out5_x)
 
-            self.out3 = self.rfconv(self.out2)
-            self.out3 = torch.cat((self.out3, self.out2), 1)
-
-            self.out4 = self.upconv1(self.out3)
-            self.out4 = torch.cat((self.out4, self.out1), 1)
-
-            self.out5 = self.upconv2(self.out4)
-            self.out5 = torch.cat((self.out5, x), 1)
-
-            self.out_final = self.finalconv(self.out5)
-
-        return self.out_final
+        return out_final
         # =============================================
 
 
 class DilatedUNet(UNet):
     def __init__(self, kernel, num_filters, num_colours):
         super(DilatedUNet, self).__init__(kernel, num_filters, num_colours)
-        # replace the intermediate dilations
+        # replace the intermediate dilation
         self.rfconv = nn.Sequential(
-            MyDilatedConv2d(num_filters * 2, num_filters * 2, kernel_size=kernel,
-                            dilation=1),
+            MyDilatedConv2d(num_filters * 2, num_filters * 2, kernel_size=kernel, dilation=1),
             nn.BatchNorm2d(num_filters * 2),
             nn.ReLU())
 
@@ -436,7 +406,7 @@ def run_validation_step(cnn, criterion, test_grey, test_rgb_cat, batch_size,
                                 labels,
                                 batch_size=args.batch_size,
                                 num_colours=num_colours)
-        losses.append(val_loss.data[0])
+        losses.append(val_loss.data.item())
 
         _, predicted = torch.max(outputs.data, 1, keepdim=True)
         total += labels.size(0) * 32 * 32
@@ -568,7 +538,7 @@ if __name__ == '__main__':
                                 num_colours=num_colours)
             loss.backward()
             optimizer.step()
-            losses.append(loss.data[0])
+            losses.append(loss.data.item())
 
         # plot training images
         if args.plot:
