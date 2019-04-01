@@ -1,24 +1,21 @@
 """Script to visualize attention maps using a pre-trained model.
 
-    Usage: python translate_no_attn.py --load=checkpoints/no-attn/py2
+    Usage: python translate_no_attention.py --load=checkpoints/no-attn/py2
 """
 
-import os
-import pdb
-import sys
 import argparse
+import os
 import pickle as pkl
-
+import sys
 import warnings
-warnings.filterwarnings("ignore")
-
-import numpy as np
 
 import torch
 
-# Local imports
 import utils
 
+warnings.filterwarnings("ignore")
+
+# Local imports
 
 words = ['roomba',
          'concert',
@@ -36,10 +33,16 @@ words = ['roomba',
          'philosophical',
          # others
          'supercalifragilisticexpialidocious'
-        ]
+         ]
 
 
 def load(opts):
+    """
+    Loads the encoder, decoder and the index dictionary from the given commandline options
+
+    :param opts: the commandline options
+    :return: the encoder, decoder and the index dictionary
+    """
     encoder = torch.load(os.path.join(opts.load, 'encoder.pt'))
     decoder = torch.load(os.path.join(opts.load, 'decoder.pt'))
     idx_dict = pkl.load(open(os.path.join(opts.load, 'idx_dict.pkl'), 'rb'))
@@ -47,10 +50,12 @@ def load(opts):
 
 
 def create_parser():
-    """Creates a parser for command-line arguments.
+    """
+    Creates a parser for command-line arguments.
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('--load', type=str, default='checkpoints/no-attn/py2', help='Path to checkpoint directory.')
+    parser.add_argument('--load', type=str, default='checkpoints/no-attn/py2',
+                        help='Path to checkpoint directory.')
     parser.add_argument('--cuda', action='store_true', default=False, help='Use GPU.')
     return parser
 
@@ -66,10 +71,5 @@ if __name__ == '__main__':
     encoder, decoder, idx_dict = load(opts)
 
     for word in words:
-        translated = utils.translate(word,
-                                     encoder,
-                                     decoder,
-                                     idx_dict,
-                                     opts)
-
+        translated = utils.translate(word, encoder, decoder, idx_dict, opts)
         print('{} --> {}'.format(word, translated))
